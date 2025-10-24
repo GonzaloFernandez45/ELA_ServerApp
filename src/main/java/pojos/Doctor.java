@@ -12,7 +12,7 @@ public class Doctor {
     private String gender;
     public String email;
 
-    public Doctor(int id, String name, String surname, int DNI, Date birthDate, String gender, String email) {
+    public Doctor(Integer id, String name, String surname, Integer DNI, Date birthDate, String gender, String email) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -22,11 +22,11 @@ public class Doctor {
         this.email = email;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -46,11 +46,11 @@ public class Doctor {
         this.surname = surname;
     }
 
-    public int getDNI() {
+    public Integer getDNI() {
         return DNI;
     }
 
-    public void setDNI(int DNI) {
+    public void setDNI(Integer DNI) {
         this.DNI = DNI;
     }
 
@@ -102,5 +102,4 @@ public class Doctor {
                 ", email='" + email + '\'' +
                 '}';
     }
-
 }
