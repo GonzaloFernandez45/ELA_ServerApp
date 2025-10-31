@@ -8,11 +8,11 @@ public class Doctor {
     private String name;
     private String surname;
     private Integer DNI;
-    private Date birthDate;
+    private java.sql.Date birthDate;
     private String gender;
     public String email;
 
-    public Doctor(Integer id, String name, String surname, Integer DNI, Date birthDate, String gender, String email) {
+    public Doctor(Integer id, String name, String surname, Integer DNI, java.sql.Date birthDate, String gender, String email) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -58,7 +58,7 @@ public class Doctor {
         return birthDate;
     }
 
-    public void setBirthDate(Date birthDate) {
+    public void setBirthDate(java.sql.Date birthDate) {
         this.birthDate = birthDate;
     }
 
