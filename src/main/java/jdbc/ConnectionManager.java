@@ -24,7 +24,7 @@ public class ConnectionManager {
         this.pMan = new JDBCPatientManager(this);
 
         this.createTables();
-        //this.insertSymptom();
+        this.insertSymptoms();
 
     }
 
