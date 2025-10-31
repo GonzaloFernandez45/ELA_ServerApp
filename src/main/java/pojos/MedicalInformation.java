@@ -7,11 +7,11 @@ import java.util.Objects;
 public class MedicalInformation {
     private Integer id;
     private List<Symptom> symptoms;
-    private Date reportDate;
+    private java.sql.Date reportDate;
     private List<String> medication;
 
 
-    public MedicalInformation(Integer id, List<Symptom> symptoms, Date reportDate, List<String> medication) {
+    public MedicalInformation(Integer id, List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication) {
         this.id = id;
         this.symptoms = symptoms;
         this.reportDate = reportDate;
@@ -33,7 +33,7 @@ public class MedicalInformation {
         return reportDate;
     }
 
-    public void setReportDate(Date reportDate) {
+    public void setReportDate(java.sql.Date reportDate) {
         this.reportDate = reportDate;
 
     }
