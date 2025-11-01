@@ -9,13 +9,15 @@ public class MedicalInformation {
     private List<Symptom> symptoms;
     private java.sql.Date reportDate;
     private List<String> medication;
+    private String feedback;
 
 
-    public MedicalInformation(Integer id, List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication) {
+    public MedicalInformation(Integer id, List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication, String feedback) {
         this.id = id;
         this.symptoms = symptoms;
         this.reportDate = reportDate;
         this.medication = medication;
+        this.feedback = feedback;
     }
     public Integer getId() {
         return id;
@@ -43,6 +45,8 @@ public class MedicalInformation {
     public void setMedication(List<String> medication) {
         this.medication = medication;
     }
+    public String getFeedback() {return feedback;}
+    public void setFeedback(String feedback) {this.feedback = feedback;}
 
     @Override
     public boolean equals(Object o) {
@@ -53,7 +57,7 @@ public class MedicalInformation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, symptoms, reportDate, medication);
+        return Objects.hash(id, symptoms, reportDate, medication, feedback);
     }
 
     @Override
@@ -63,6 +67,7 @@ public class MedicalInformation {
                 ", symptoms=" + symptoms +
                 ", reportDate=" + reportDate +
                 ", medication=" + medication +
+                ", feedback='" + feedback +
                 '}';
     }
 }
