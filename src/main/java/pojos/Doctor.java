@@ -1,18 +1,20 @@
 package pojos;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class Doctor {
     private Integer id;
     private String name;
     private String surname;
-    private Integer DNI;
+    private String DNI;
     private java.sql.Date birthDate;
     private String gender;
-    public String email;
+    private String email;
+    private List<Patient> patients;
 
-    public Doctor(Integer id, String name, String surname, Integer DNI, java.sql.Date birthDate, String gender, String email) {
+    public Doctor(Integer id, String name, String surname, String DNI, java.sql.Date birthDate, String gender, String email) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -46,11 +48,11 @@ public class Doctor {
         this.surname = surname;
     }
 
-    public Integer getDNI() {
+    public String getDNI() {
         return DNI;
     }
 
-    public void setDNI(Integer DNI) {
+    public void setDNI(String DNI) {
         this.DNI = DNI;
     }
 

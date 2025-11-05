@@ -1,7 +1,7 @@
 package pojos;
 
 public class Administrator {
-    private int id;
+    private Integer id;
     private String dni;
     private String password;
 

@@ -15,6 +15,10 @@ public class Patient {
     private String email;
     private Integer insurance;
 
+    private Integer doctor_id;
+    private MedicalInformation medicalInformation;
+
+
     public Patient(Integer id, String surname, String name, Integer insurance) {
         this.surname = surname;
         this.name = name;

@@ -10,6 +10,8 @@ public class MedicalInformation {
     private java.sql.Date reportDate;
     private List<String> medication;
     private String feedback;
+    private Patient patient;
+
 
 
     public MedicalInformation(Integer id, List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication, String feedback) {

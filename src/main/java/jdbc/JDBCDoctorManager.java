@@ -25,7 +25,7 @@ public class JDBCDoctorManager implements DoctorManager {
             pstmt = c.prepareStatement(template);
             pstmt.setString(1, d.getName());
             pstmt.setString(2, d.getSurname());
-            pstmt.setInt(3, d.getDNI());
+            pstmt.setString(3, d.getDNI());
             pstmt.setDate(4, d.getBirthDate());
             pstmt.setString(5, d.getGender());
             pstmt.setString(6, d.getEmail());
