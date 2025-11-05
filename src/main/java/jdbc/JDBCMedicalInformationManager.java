@@ -14,8 +14,6 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
         this.c= conMan.getConnection();
     }
 
-
-
 // me los ha dado por defecto
     @Override
     public void insertMedicalInformation(MedicalInformation m) {
