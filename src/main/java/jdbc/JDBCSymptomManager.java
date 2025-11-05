@@ -17,6 +17,7 @@ public class JDBCSymptomManager implements SymptomManager {
         this.conMan = conMan;
         this.c = conMan.getConnection();
     }
+    public JDBCSymptomManager() {}// necesario para la clase server
 
     @Override
     public void addSymptom(Symptom s) {
