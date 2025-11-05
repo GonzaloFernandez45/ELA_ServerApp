@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.Statement;
 
 public class JDBCPatientManager implements PatientManager {
 
@@ -62,5 +63,54 @@ public class JDBCPatientManager implements PatientManager {
         }
         return patients;
     }
+
+    public Patient getPatientbyId( int id) {//para cuando el doctor escoge una paciente de la lista
+        try {
+            String sql = "SELECT * FROM patient WHERE id = " + id;
+            Statement stmt;
+            stmt = c.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            Patient p = null;
+            while(rs.next()){
+                p= new Patient(
+                        rs.getInt("id"),
+                        rs.getString("surname"),
+                        rs.getString("name"),
+                        rs.getInt("insurance") );
+            }
+            return p;
+        }catch(SQLException e) {
+            System.out.println("Error in the database");
+            e.printStackTrace();
+        }
+        return null;
+
+    }
+
+    public void updatePatient(Patient p) {//la opcion del doctor de "modify patient data"
+        try{
+            String sql= " UPDATE patient SET name =?, surname=?, dob=?,sex=?,phone=?,email=?,insurance=? WHERE id=?";
+            PreparedStatement pstmt;
+            pstmt= c.prepareStatement(sql);
+            pstmt.setString(1,p.getName());
+            pstmt.setString(2,p.getSurname());
+            pstmt.setDate(3, p.getDateOfBirth());
+            pstmt.setString(4,p.getSex());
+            pstmt.setInt(5,p.getPhone());
+            pstmt.setString(6,p.getEmail());
+            pstmt.setInt(7,p.getInsurance());
+            pstmt.executeUpdate();
+            pstmt.close();
+
+        }catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+        }
+
+
+
+    }
+
+
 }
 

@@ -77,7 +77,8 @@ public class ConnectionManager {
             String create3 = "CREATE TABLE medical_information ("
                     + "id	INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + "reportDate  TEXT NOT NULL,"
-                    + "medication TEXT)";
+                    + "medication TEXT,"
+                    + "feedback TEXT)";
             createTables3.executeUpdate(create3);
             createTables3.close();
 

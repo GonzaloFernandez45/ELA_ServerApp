@@ -6,7 +6,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import pojos.Administrator;
-import pojos.Doctor;
 
 public class JDBCAdministratorManager implements AdministratorManager {
     private Connection c;
