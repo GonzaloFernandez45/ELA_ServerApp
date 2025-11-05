@@ -14,6 +14,10 @@ public class Role {
         this.users = users;
     }
 
+    public Role(String name) {
+        this.name = name;
+    }
+
     public String getId() {
         return id;
     }
@@ -53,9 +57,7 @@ public class Role {
     @Override
     public String toString() {
         return "Role{" +
-                "id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                ", users=" + users +
+                "name='" + name + '\'' +
                 '}';
     }
 }

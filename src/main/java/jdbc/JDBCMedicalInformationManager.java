@@ -4,6 +4,8 @@ import interfaces.MedicalInformationManager;
 import pojos.MedicalInformation;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
     private static Connection c;
@@ -17,7 +19,17 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 // me los ha dado por defecto
     @Override
     public void insertMedicalInformation(MedicalInformation m) {
+        try{
+            String template = "INSERT INTO medicalInformation ...";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(template);
 
+            pstmt.executeUpdate();
+            pstmt.close();
+        }catch (SQLException e) {
+            System.out.println("Error in the database");
+            e.printStackTrace();
+        }
     }
 
     @Override
