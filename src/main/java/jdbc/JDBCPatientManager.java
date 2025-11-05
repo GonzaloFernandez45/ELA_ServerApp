@@ -64,7 +64,8 @@ public class JDBCPatientManager implements PatientManager {
         return patients;
     }
 
-    public Patient getPatientbyId( int id) {//para cuando el doctor escoge una paciente de la lista
+    @Override
+    public Patient getPatientbyId(int id) {//para cuando el doctor escoge una paciente de la lista
         try {
             String sql = "SELECT * FROM patient WHERE id = " + id;
             Statement stmt;
@@ -87,6 +88,7 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
+    @Override
     public void updatePatient(Patient p) {//la opcion del doctor de "modify patient data"
         try{
             String sql= " UPDATE patient SET name =?, surname=?, dob=?,sex=?,phone=?,email=?,insurance=? WHERE id=?";
