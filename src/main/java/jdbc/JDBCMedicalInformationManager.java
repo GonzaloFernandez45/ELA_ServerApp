@@ -34,7 +34,19 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
     @Override
     public void updateMedicalInformation(MedicalInformation m) {
+        try {
+            String sql = "UPDATE medicalInformation SET feedback = ? WHERE id = ?";
+            PreparedStatement pstmt = c.prepareStatement(sql);
 
+            pstmt.setString(1, m.getFeedback());  // Asumimos que el feedback ahora está presente
+            pstmt.setInt(2, m.getId());  // Usamos el ID de la información médica para actualizar el registro específico
+
+            pstmt.executeUpdate();
+            pstmt.close();
+        } catch (SQLException e) {
+            System.out.println("Error updating medical information");
+            e.printStackTrace();
+        }
     }
 
     @Override

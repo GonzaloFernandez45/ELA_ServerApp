@@ -83,6 +83,7 @@ public class SendDataViaNetwork {
         // Asegurarse de que los datos se escriban completamente
         dataOutputStream.flush();
     }
+
     public void releaseResources() {
         try {
             if (dataOutputStream != null) {
