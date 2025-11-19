@@ -1,9 +1,6 @@
 package ReceiveData;
 
-import pojos.Doctor;
-import pojos.MedicalInformation;
-import pojos.Patient;
-import pojos.Symptom;
+import pojos.*;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -42,7 +39,18 @@ public class SendDataViaNetwork {
         dataOutputStream.writeUTF(patient.getName());
         dataOutputStream.writeUTF(patient.getSurname());
         dataOutputStream.writeUTF(String.valueOf(patient.getInsurance()));
+        dataOutputStream.writeUTF(String.valueOf(patient.getPhone()));
+        dataOutputStream.writeUTF(patient.getEmail());
+        dataOutputStream.writeUTF(patient.getSex());
+        dataOutputStream.writeUTF(String.valueOf(patient.getDateOfBirth()));
         dataOutputStream.flush();
+    }
+
+    public void sendUser(User user) throws IOException{
+        dataOutputStream.writeUTF(user.getEmail());
+        dataOutputStream.writeUTF(String.valueOf(user.getRole()));
+        byte[] password = user.getPassword();
+        dataOutputStream.writeUTF(new String(password));
     }
 
     public void sendDoctor(Doctor doctor) throws IOException {
