@@ -4,14 +4,7 @@ import pojos.Role;
 import pojos.User;
 
 public interface UserManager {
-    public void register(User u);
-    public void createRole(Role r);
-    public Role getRole(String name);
-    public void assignRole(User u,Role r);
-    public User login(String username, String password);
-    public void deleteUser(User u);
-    public void updateUser (User u, String newPasswordHash);
-    public String securePassword(String password);
-
-
+    public void addUser(User user);
+    public User checkPassword(String password, String email);
+    int getPatientIDFromUser(User user);
 }

@@ -61,7 +61,7 @@ public class ConnectionManager {
                     + "dob	TEXT,"
                     + "sex	TEXT,"
                     + "phone INTEGER,"
-                    + "email	TEXT,"
+                    + "email	TEXT NOT NULL UNIQUE,"
                     + "insurance	INTEGER NOT NULL )";
             createTables1.executeUpdate(create1);
             createTables1.close();
@@ -98,11 +98,21 @@ public class ConnectionManager {
             String create5 = "CREATE TABLE symptom_medicalInformation ("
                     + "symptom_id INTEGER,"
                     + "MEDICAL_information_id INTEGER,"
-                    + "FOREIGN KEY (symptom_id) REFERENCES symptom(ID)),"
-                    + "FOREIGN KEY (medical_information_id) REFERENCES medicalInformation(ID)),"
+                    + "FOREIGN KEY (symptom_id) REFERENCES symptom(id)),"
+                    + "FOREIGN KEY (medical_information_id) REFERENCES medicalInformation(id)),"
                     + "PRIMARY KEY (symptom_id,medical_information_id))";
             createTables5.executeUpdate(create5);
             createTables5.close();
+
+            Statement createTables6 = conn.createStatement();
+            String create6 = "CREATE TABLE user ("
+                    + "user_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "email TEXT NOT NULL UNIQUE,"
+                    + "password TEXT NOT NULL,"
+                    + "role TEXT NOT NULL"
+                    + "FOREIGN KEY (patient_id) REFERENCES patient(id)),";
+            createTables6.executeUpdate(create6);
+            createTables6.close();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("already exist")){

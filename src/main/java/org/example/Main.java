@@ -1,21 +1,17 @@
 package org.example;
 
-import ReceiveData.ClientHandler;
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import interfaces.PatientManager;
-import interfaces.SymptomManager;
 import interfaces.UserManager;
 import jdbc.*;
 import ReceiveData.*;
 import pojos.Patient;
+import pojos.Role;
 import pojos.User;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -32,6 +28,7 @@ public class Main {
             ServerSocket serverSocket = new ServerSocket(8000);
             ConnectionManager conMan = new ConnectionManager();
             JDBCPatientManager patientManager = new JDBCPatientManager(conMan);
+            JDBCUserManager userManager = new JDBCUserManager(conMan);
             Socket socket = serverSocket.accept();
 
             ReceiveDataViaNetwork recieveDataViaNetwork = null;
@@ -46,7 +43,7 @@ public class Main {
 
                     if(message == 1){
                         sendDataViaNetwork.sendStrings("PATIENT");
-                        patientMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, patientManager); // atiende a este cliente y vuelve a escuchar
+                        patientMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, patientManager, userManager); // atiende a este cliente y vuelve a escuchar
                     }
 
                 } catch (IOException e) {
@@ -75,7 +72,7 @@ public class Main {
     }
 
 
-    private static void patientMenu( SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork,Socket socket, PatientManager patientManager){
+    private static void patientMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, PatientManager patientManager, JDBCUserManager userManager){
           try{
             boolean patientMenu = true;
 
@@ -85,7 +82,7 @@ public class Main {
                     case 1:
                         break;
                     case 2:
-                        patientRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, patientManager);
+                        patientRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, patientManager, userManager);
                         break;
                     case 3:
                         patientMenu = false;
@@ -109,12 +106,13 @@ public class Main {
                     Patient patient = recieveDataViaNetwork.recievePatient();
                     User user = recieveDataViaNetwork.recieveUser();
                     System.out.println(user.toString());
-                    //userManager.addUser...
-
+                    int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
+                    user.setPatient_id(patient_id);
+                    userManager.addUser(user);
                     patientManager.addPatient(patient);
                     sendDataViaNetwork.sendStrings("SUCCESS");
                     sendDataViaNetwork.sendPatient(patient);
-                    //patient.setPatientId...
+                    //patient.setPatientID(patientManager.getID(patient.getName)));
                     //menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket); CREAR
 
 
@@ -128,6 +126,34 @@ public class Main {
             }
     }
 
+    private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) {
+            try{
+                sendDataViaNetwork.sendStrings("Patient log in");
+                String message = recieveDataViaNetwork.receiveString();
+                System.out.println(message);
+                Role role = new Role("Patient");
+                if(message.equals("OK")){
+                    User user = recieveDataViaNetwork.recieveUser();
+                    User u = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
+                    if(user != null && user.getRole().equals(role)){
+                        sendDataViaNetwork.sendStrings("SUCCESS");
+                        //Patient patient = patientManager.getPatientFromUser(user);
+                        //userSetPatinetID
+                        //System.out.println(patient.toString());
+                        //sendDataViaNetwork.sendPatient(patient);
+                        //menuPaciente(Paciente, send, receive, symptom, infomed, socket)
+                    }else{
+                        sendDataViaNetwork.sendStrings("ERROR");}
+                }else{
+                    System.out.println("Error in login");
+                }
+
+
+            } catch (IOException e) {
+                System.out.println("Error or client disconnected");
+                releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+            }
+    }
     private static void releaseResources(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket){
         if(sendDataViaNetwork != null && recieveDataViaNetwork != null) {
             sendDataViaNetwork.releaseResources();

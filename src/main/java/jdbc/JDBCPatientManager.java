@@ -2,6 +2,7 @@ package jdbc;
 
 import interfaces.PatientManager;
 import pojos.Patient;
+import pojos.User;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -132,6 +133,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
     }
+
 
 
 }

@@ -1,6 +1,7 @@
 package interfaces;
 
 import pojos.Patient;
+import pojos.User;
 
 import java.util.List;
 
@@ -9,4 +10,5 @@ public interface PatientManager {
     public List<Patient> listPatients();
     Patient getPatientbyId(int id);
     void updatePatient(Patient p);
+    Patient getPatientFromUser(User user);
 }

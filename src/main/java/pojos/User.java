@@ -3,6 +3,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class User {
+    public int patient_id;
     private Integer id;
     private String email;
     private byte[] password;
@@ -56,6 +57,14 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public int getPatient_id() {
+        return patient_id;
+    }
+    public void setPatient_id(int patient_id) {
+        this.patient_id = patient_id;
+    }
+
 
     @Override
     public boolean equals(Object o) {
