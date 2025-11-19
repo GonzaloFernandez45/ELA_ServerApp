@@ -72,30 +72,4 @@ public class JDBCUserManager implements UserManager {
         return u;
     }
 
-    @Override
-    public int getPatientIDFromUser(User user) {
-        String query = "SELECT patient_id FROM user WHERE email = ?;";
-        PreparedStatement s = null;
-        ResultSet rs = null;
-        Integer id = null;
-        try {
-            s = conMan.getConnection().prepareStatement(query);
-            s.setInt(1, id);
-            rs = s.executeQuery();
-            if (rs.next()) { // Move the cursor to the first row
-                id = rs.getInt("id");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (s != null) s.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-         return id;
-    }
-
 }

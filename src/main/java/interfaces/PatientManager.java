@@ -10,5 +10,6 @@ public interface PatientManager {
     public List<Patient> listPatients();
     Patient getPatientbyId(int id);
     void updatePatient(Patient p);
-    Patient getPatientFromUser(User user);
+    int getPatientIDFromEmail(String email);
+    public Patient getPatientFromUser(User user);
 }

@@ -6,5 +6,4 @@ import pojos.User;
 public interface UserManager {
     public void addUser(User user);
     public User checkPassword(String password, String email);
-    int getPatientIDFromUser(User user);
 }

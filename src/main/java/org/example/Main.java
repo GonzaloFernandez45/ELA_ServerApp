@@ -72,7 +72,7 @@ public class Main {
     }
 
 
-    private static void patientMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, PatientManager patientManager, JDBCUserManager userManager){
+    private static void patientMenu (SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, PatientManager patientManager, JDBCUserManager userManager) throws IOException {
           try{
             boolean patientMenu = true;
 
@@ -80,6 +80,7 @@ public class Main {
                 int opcion = recieveDataViaNetwork.receiveInt();
                 switch(opcion){
                     case 1:
+                        logInPatient(recieveDataViaNetwork, sendDataViaNetwork,socket,patientManager,userManager);
                         break;
                     case 2:
                         patientRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, patientManager, userManager);
@@ -99,7 +100,7 @@ public class Main {
           }
     }
 
-    private static void patientRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) {
+    private static void patientRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) throws IOException {
             try{
                 String message = recieveDataViaNetwork.receiveString();
                 if(message.equals("OK")){
@@ -112,8 +113,8 @@ public class Main {
                     patientManager.addPatient(patient);
                     sendDataViaNetwork.sendStrings("SUCCESS");
                     sendDataViaNetwork.sendPatient(patient);
-                    //patient.setPatientID(patientManager.getID(patient.getName)));
-                    //menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket); CREAR
+                    patient.setId(patient_id);
+                    menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket);
 
 
                 }else{
@@ -126,7 +127,40 @@ public class Main {
             }
     }
 
-    private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) {
+    private static void menuPaciente(Patient patient, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket) throws IOException {
+        try{
+            boolean patientMenu = true;
+
+            while(patientMenu){
+                int opcion = recieveDataViaNetwork.receiveInt();
+                switch(opcion){
+                    case 1:
+                        System.out.println("1. Insert medical information");
+                        break;
+                    case 2:
+                        System.out.println("2. Record Signal");
+                        break;
+                    case 3:
+                        System.out.println("3. Send Signal");
+                        break;
+                    case 4:
+                         System.out.println("4. See doctor´s feedback");
+                         break;
+                    case 0:
+                        System.out.println("0. Exit");
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        break;
+                }
+            }
+        }catch(Exception ex){
+            System.out.println(ex.getMessage());
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
+        }
+    }
+
+    private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) throws IOException {
             try{
                 sendDataViaNetwork.sendStrings("Patient log in");
                 String message = recieveDataViaNetwork.receiveString();
@@ -137,11 +171,12 @@ public class Main {
                     User u = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
                     if(user != null && user.getRole().equals(role)){
                         sendDataViaNetwork.sendStrings("SUCCESS");
-                        //Patient patient = patientManager.getPatientFromUser(user);
-                        //userSetPatinetID
-                        //System.out.println(patient.toString());
-                        //sendDataViaNetwork.sendPatient(patient);
-                        //menuPaciente(Paciente, send, receive, symptom, infomed, socket)
+                        Patient patient = patientManager.getPatientFromUser(user);
+                        int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
+                        user.setPatient_id(patient_id);
+                        System.out.println(patient.toString());
+                        sendDataViaNetwork.sendPatient(patient);
+                        menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket);
                     }else{
                         sendDataViaNetwork.sendStrings("ERROR");}
                 }else{

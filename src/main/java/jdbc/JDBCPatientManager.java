@@ -319,7 +319,62 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
+    @Override
+    public int getPatientIDFromEmail(String email){
+        String query = "SELECT patient_id FROM user WHERE email = ?;";
+        PreparedStatement s = null;
+        Patient p = null;
+        ResultSet rs = null;
+        Integer id = null;
+        try {
+            s = conMan.getConnection().prepareStatement(query);
+            s.setString(1, email);
+            rs = s.executeQuery();
+            if (rs.next()) { // Move the cursor to the first row
+                id = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (s != null) s.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return id;
 
+    }
+
+    @Override
+    public Patient getPatientFromUser(User user){
+        String query = "SELECT patient_id FROM user WHERE email = ?;";
+        PreparedStatement s = null;
+        Patient p = null;
+        ResultSet rs = null;
+        Integer id = null;
+        try {
+            s = conMan.getConnection().prepareStatement(query);
+            s.setInt(1, id);
+            rs = s.executeQuery();
+            if (rs.next()) { // Move the cursor to the first row
+                id = rs.getInt("id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (s != null) s.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        p = getPatientbyId(id);
+        return p;
+
+    }
 
 }
 
