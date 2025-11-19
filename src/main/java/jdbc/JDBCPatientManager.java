@@ -5,13 +5,9 @@ import pojos.Patient;
 import pojos.User;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Statement;
 
 public class JDBCPatientManager implements PatientManager {
 
@@ -114,6 +110,195 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
+
+    public boolean updatePatientName(int patientId, String newName) {
+        if (newName.isEmpty()){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET name = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setString(1,newName);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+    public boolean updatePatientSurname(int patientId, String newSurname) {
+        if (newSurname.isEmpty()){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET surname = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setString(1,newSurname);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+    public boolean updatePatientDNI(int patientId, String newDni) {
+        if (newDni.isEmpty()){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET dni = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setString(1,newDni);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+
+    public boolean updatePatientDob(int patientId, Date newDob) {
+        if (newDob.equals(null)){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET dob = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setDate(1,newDob);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+    public boolean updatePatientPhone(int patientId, int newPatientPhone) {
+        if (newPatientPhone == 0){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET phone = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setInt(1,newPatientPhone);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+
+    public boolean updatePatientEmail(int patientId, String newEmail) {
+        if (newEmail.isEmpty()){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET email = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setString(1,newEmail);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+
+    public boolean updatePatientSex(int patientId, String newSex) {
+        if (newSex.isEmpty()){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET sex = ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setString(1,newSex);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+    public boolean updateePatientInsurance(int patientId, int newInsurance){
+        if (newInsurance == 0){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET insurance= ? WHERE patientId = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setInt(1,newInsurance);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
+
     public String addFeedback (int patientId, String feedback) {
         try{
             String query = "INSERT INTO feedback (patient_id, feedback) VALUES (?, ?)";
