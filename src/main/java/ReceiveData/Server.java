@@ -32,7 +32,8 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        SymptomManager symptomManager = new JDBCSymptomManager();  // Crear el manejador de síntomas
+        ConnectionManager manager = new ConnectionManager();
+        SymptomManager symptomManager = new JDBCSymptomManager(manager);  // Crear el manejador de síntomas
         Server server = new Server(12345, symptomManager);  // Puerto 12345
         server.start();  // Inicia el servidor
     }
