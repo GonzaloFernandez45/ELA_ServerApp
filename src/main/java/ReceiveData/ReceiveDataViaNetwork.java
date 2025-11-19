@@ -56,11 +56,16 @@ public class ReceiveDataViaNetwork {
     public Patient recievePatient(){
         Patient patient = null;
         try {
-            int id = dataInputStream.readInt();
             String name = dataInputStream.readUTF();
             String surname = dataInputStream.readUTF();
+            String dni = dataInputStream.readUTF();
+            Date birthDate = Date.valueOf(dataInputStream.readUTF());
+            String sex = dataInputStream.readUTF();
+            Integer phone = dataInputStream.readInt();
+            String email = dataInputStream.readUTF();
             Integer insurance = Integer.valueOf(dataInputStream.readUTF());
-            patient = new Patient(id, name, surname, insurance);
+            patient = new Patient(name, surname, dni, birthDate, sex, phone, email, insurance);
+            return patient;
         } catch (EOFException ex) {
             System.out.println("Data not correctly read.");
         } catch (IOException ex) {
@@ -84,25 +89,16 @@ public class ReceiveDataViaNetwork {
         return doctor;
     }
 
-    public User recieveUser() {
+    public User recieveUser()
+    {
         User u = null;
         try {
-            // Recibir el ID del usuario
-            int id = dataInputStream.readInt();
-
-            // Recibir el nombre de usuario
-            String username = dataInputStream.readUTF();
-
-            // Recibir la contraseña encriptada
-            String passwordEncripted = dataInputStream.readUTF();
-
-            // Recibir el rol del usuario (como String) y crear el objeto Role
-            String roleString = dataInputStream.readUTF();
-            Role role = new Role(roleString);  // Asegúrate de que tu clase Role pueda manejar esto
-
-            // Crear el objeto User con los datos recibidos
-            u = new User(id, username, passwordEncripted.getBytes(), role);
-
+            String email = dataInputStream.readUTF();
+            byte[] psw = dataInputStream.readUTF().getBytes();
+            String role = dataInputStream.readUTF();
+            Role r = new Role(role);
+            u = new User(email, psw, r);
+            return u;
         } catch (IOException ex) {
             Logger.getLogger(ReceiveDataViaNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }

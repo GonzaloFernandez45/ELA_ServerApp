@@ -84,6 +84,7 @@ public class Main {
                         logInPatient(recieveDataViaNetwork, sendDataViaNetwork,socket,patientManager,userManager);
                         break;
                     case 2:
+                        System.out.println("Patient register");
                         patientRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, patientManager, userManager);
                         break;
                     case 3:
@@ -104,19 +105,21 @@ public class Main {
     private static void patientRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager) throws IOException {
             try{
                 String message = recieveDataViaNetwork.receiveString();
+                System.out.println(message);
+
                 if(message.equals("OK")){
                     Patient patient = recieveDataViaNetwork.recievePatient();
+                    System.out.println(patient.toString());
                     User user = recieveDataViaNetwork.recieveUser();
                     System.out.println(user.toString());
-                    int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
-                    user.setPatient_id(patient_id);
                     userManager.addUser(user);
                     patientManager.addPatient(patient);
+                    int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
+                    user.setPatient_id(patient_id);
                     sendDataViaNetwork.sendStrings("SUCCESS");
                     sendDataViaNetwork.sendPatient(patient);
                     patient.setId(patient_id);
-                    menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket);
-
+                    menuPaciente(patient,sendDataViaNetwork, recieveDataViaNetwork, socket);
 
                 }else{
                     System.out.println("Error in register");
