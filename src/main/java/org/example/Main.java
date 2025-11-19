@@ -3,6 +3,9 @@ package org.example;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -205,5 +208,198 @@ public class Main {
         }
     }
 
+    public static void addFeedback (Socket socket) throws IOException {
+            ReceiveDataViaNetwork receiveDataViaNetwork = new ReceiveDataViaNetwork(socket);
+            int patientId = receiveDataViaNetwork.receiveInt();
+
+            String feedback = receiveDataViaNetwork.receiveString();
+
+            JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+            String responseMessage = patientManager.addFeedback(patientId,feedback);
+
+            SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+            sendData.sendStrings(responseMessage);
+
+    }
+    public static void updatePatientName(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newName = receiveData.receiveString();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientName(patientId, newName);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+
+    public static void updatePatientSurname(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newSurname = receiveData.receiveString();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientSurname(patientId, newSurname);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient surname updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+    public static void updatePatientDNI(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newDni = receiveData.receiveString();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientDNI(patientId, newDni);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient  DNI updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+
+    public static void updatePatientDob(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newDobstr= receiveData.receiveString();
+        java.sql.Date newDob = Date.valueOf(newDobstr);
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientDob(patientId,newDob);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+
+    public static void updatePatientSex(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newSex = receiveData.receiveString();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientSex(patientId, newSex);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+    public static void updatePatientPhone(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        int newPhone = receiveData.receiveInt();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientPhone(patientId, newPhone);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+    public static void updatePatientInsurance(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        int newInsurance = receiveData.receiveInt();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientInsurance(patientId, newInsurance);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
+    public static void updatePatientEmail(Socket socket) throws IOException {
+        // Recibir el ID del paciente
+        ReceiveDataViaNetwork receiveData = new ReceiveDataViaNetwork(socket);
+        int patientId = receiveData.receiveInt();
+
+        // Recibir el nuevo nombre
+        String newEmail = receiveData.receiveString();
+
+        // Crear una instancia de JDBCPatientManager
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Llamar al método de JDBCPatientManager para actualizar el nombre
+        boolean success = patientManager.updatePatientEmail(patientId, newEmail);
+
+        // Enviar respuesta al doctor
+        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
+        if (success) {
+            sendData.sendStrings("Patient name updated successfully.");
+        } else {
+            sendData.sendStrings("Error updating patient name.");
+        }
+    }
 }
 

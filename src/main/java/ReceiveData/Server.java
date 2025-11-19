@@ -37,5 +37,6 @@ public class Server {
         Server server = new Server(12345, symptomManager);  // Puerto 12345
         server.start();  // Inicia el servidor
     }
+
 }
 
