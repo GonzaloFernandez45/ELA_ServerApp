@@ -34,7 +34,7 @@ public class ConnectionManager {
             conn = DriverManager.getConnection("jdbc:sqlite:./db/ELA_telemedicine.db");
             conn.createStatement().execute("PRAGMA foreign_keys=ON");
         } catch (ClassNotFoundException cnfE) {
-            System.out.println("Databases prosthetic not loaded");
+            System.out.println("Databases ELA not loaded");
             cnfE.printStackTrace();
         } catch (SQLException sqlE) {
             System.out.println("Error with database");
