@@ -3,6 +3,7 @@ package jdbc;
 import interfaces.PatientManager;
 import pojos.Patient;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -110,6 +111,25 @@ public class JDBCPatientManager implements PatientManager {
         }
 
 
+
+    }
+    public String addFeedback (int patientId, String feedback) {
+        try{
+            String query = "INSERT INTO feedback (patient_id, feedback) VALUES (?, ?)";
+            PreparedStatement pstmt;
+            pstmt=c.prepareStatement(query);
+            pstmt.setInt(1,patientId);
+            pstmt.setString(2,feedback);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return "Feedback added";
+
+        }catch(SQLException e ){
+            System.out.println("Error in the database");
+            e.printStackTrace();
+            return "FEEDBACK NOT ADDED";
+
+        }
 
     }
 
