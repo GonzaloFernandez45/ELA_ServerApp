@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class JDBCSymptomManager implements SymptomManager {
+public class    JDBCSymptomManager implements SymptomManager {
 
     private static Connection c;
     private ConnectionManager conMan;
