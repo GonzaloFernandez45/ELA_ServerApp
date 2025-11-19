@@ -274,7 +274,7 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
-    public boolean updatePatientInsurance(int patientId, int newInsurance){
+    public boolean updateePatientInsurance(int patientId, int newInsurance){
         if (newInsurance == 0){
             return false;
         }
