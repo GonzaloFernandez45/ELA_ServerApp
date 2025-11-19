@@ -113,7 +113,7 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
-    public String add_Feedback (int patientId, String feedback) {
+    public String addFeedback (int patientId, String feedback) {
         try{
             String query = "INSERT INTO feedback (patient_id, feedback) VALUES (?, ?)";
             PreparedStatement pstmt;
