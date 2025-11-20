@@ -76,7 +76,7 @@ public class Main {
     }
 
 
-    private static void patientMenu (SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, PatientManager patientManager, JDBCUserManager userManager) throws IOException {
+    private static void patientMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, PatientManager patientManager, JDBCUserManager userManager) throws IOException {
           try{
             boolean patientMenu = true;
 
@@ -111,16 +111,20 @@ public class Main {
                 System.out.println(message);
 
                 if(message.equals("OK")){
+                    System.out.println("Registering patient...");
                     Patient patient = recieveDataViaNetwork.recievePatient();
                     System.out.println(patient.toString());
                     User user = recieveDataViaNetwork.recieveUser();
                     System.out.println(user.toString());
-                    userManager.addUser(user);
-                    patientManager.addPatient(patient);
-                    int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
-                    user.setPatient_id(patient_id);
+                    patientManager.addPatient(patient); //Primero añadir al paciente a la DB
+
+                    int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail()); //Obtener su ID
+
+                    user.setPatient_id(patient_id); //Asignar la Foreign Key al usuario
+                    userManager.addUser(user); //Añadir el usuario a la DB
+
                     sendDataViaNetwork.sendStrings("SUCCESS");
-                    sendDataViaNetwork.sendPatient(patient);
+
                     patient.setId(patient_id);
                     menuPaciente(patient,sendDataViaNetwork, recieveDataViaNetwork, socket);
 
@@ -173,6 +177,7 @@ public class Main {
                 String message = recieveDataViaNetwork.receiveString();
                 System.out.println(message);
                 Role role = new Role("Patient");
+
                 if(message.equals("OK")){
                     User user = recieveDataViaNetwork.recieveUser();
                     User u = userManager.checkPassword(new String(user.getPassword()), user.getEmail());

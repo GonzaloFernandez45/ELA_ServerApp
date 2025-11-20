@@ -321,9 +321,8 @@ public class JDBCPatientManager implements PatientManager {
 
     @Override
     public int getPatientIDFromEmail(String email){
-        String query = "SELECT patient_id FROM user WHERE email = ?;";
+        String query = "SELECT id FROM patient WHERE email = ?;";
         PreparedStatement s = null;
-        Patient p = null;
         ResultSet rs = null;
         Integer id = null;
         try {
@@ -333,6 +332,7 @@ public class JDBCPatientManager implements PatientManager {
             if (rs.next()) { // Move the cursor to the first row
                 id = rs.getInt("id");
             }
+            return id;
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {

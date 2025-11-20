@@ -56,14 +56,15 @@ public class ReceiveDataViaNetwork {
     public Patient recievePatient(){
         Patient patient = null;
         try {
+            System.out.println("Receiving patient data...");
             String name = dataInputStream.readUTF();
             String surname = dataInputStream.readUTF();
             String dni = dataInputStream.readUTF();
             Date birthDate = Date.valueOf(dataInputStream.readUTF());
             String sex = dataInputStream.readUTF();
-            Integer phone = dataInputStream.readInt();
+            int phone = dataInputStream.readInt();
             String email = dataInputStream.readUTF();
-            Integer insurance = Integer.valueOf(dataInputStream.readUTF());
+            int insurance = dataInputStream.readInt();
             patient = new Patient(name, surname, dni, birthDate, sex, phone, email, insurance);
             return patient;
         } catch (EOFException ex) {
@@ -94,8 +95,9 @@ public class ReceiveDataViaNetwork {
         User u = null;
         try {
             String email = dataInputStream.readUTF();
-            byte[] psw = dataInputStream.readUTF().getBytes();
             String role = dataInputStream.readUTF();
+            byte[] psw = dataInputStream.readUTF().getBytes();
+
             Role r = new Role(role);
             u = new User(email, psw, r);
             return u;
