@@ -37,11 +37,12 @@ public class JDBCUserManager implements UserManager {
     }
 
     @Override
-    public User checkPassword(String password, String email) {
+    public boolean checkPassword(String password, String email) {
         String sql = "SELECT id, role FROM User WHERE email=? AND password=?";
         PreparedStatement s = null;
         ResultSet rs = null;
-        User u = null;
+        boolean isValid = false;
+
 
         try {
             s = conMan.getConnection().prepareStatement(sql);
@@ -51,15 +52,12 @@ public class JDBCUserManager implements UserManager {
             rs = s.executeQuery();
 
             if (rs.next()) {
-                int userId = rs.getInt("id");
-                String roleString = rs.getString("role");
-                Role role = new Role(roleString);
-                byte[] passwordBytes = password.getBytes();
-                u = new User(userId, email, passwordBytes, role);
+                isValid = true;
             }
+
         } catch (SQLException e) {
             System.out.println("Error during login process.");
-            e.printStackTrace();
+            return isValid;
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -69,7 +67,7 @@ public class JDBCUserManager implements UserManager {
             }
         }
 
-        return u;
+        return isValid;
     }
 
 }

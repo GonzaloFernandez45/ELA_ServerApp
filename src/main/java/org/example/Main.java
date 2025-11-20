@@ -180,14 +180,18 @@ public class Main {
 
                 if(message.equals("OK")){
                     User user = recieveDataViaNetwork.recieveUser();
-                    User u = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
-                    if(user != null && user.getRole().equals(role)){
+                    boolean correctPassword = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
+                    if(correctPassword){
                         sendDataViaNetwork.sendStrings("SUCCESS");
-                        Patient patient = patientManager.getPatientFromUser(user);
-                        int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail());
+
+                        int patient_id = patientManager.getPatientIDFromEmail(user.getEmail());
+                        Patient patient = patientManager.getPatientbyId(patient_id);
                         user.setPatient_id(patient_id);
+
                         System.out.println(patient.toString());
+
                         sendDataViaNetwork.sendPatient(patient);
+
                         menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket);
                     }else{
                         sendDataViaNetwork.sendStrings("ERROR");}
