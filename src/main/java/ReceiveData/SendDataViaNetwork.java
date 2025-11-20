@@ -1,5 +1,8 @@
 package ReceiveData;
 
+import interfaces.MedicalInformationManager;
+import interfaces.PatientManager;
+import interfaces.SymptomManager;
 import pojos.*;
 
 import java.io.DataOutputStream;
@@ -94,6 +97,11 @@ public class SendDataViaNetwork {
         dataOutputStream.flush();
     }
 
+    public void sendSymptom(Symptom symptom) throws IOException {
+        dataOutputStream.writeUTF(symptom.getDescription());
+        dataOutputStream.flush();
+    }
+
     public void releaseResources() {
         try {
             if (dataOutputStream != null) {
@@ -104,4 +112,6 @@ public class SendDataViaNetwork {
             Logger.getLogger(SendDataViaNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+
 }

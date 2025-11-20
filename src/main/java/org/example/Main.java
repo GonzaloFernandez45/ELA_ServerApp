@@ -9,13 +9,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import interfaces.MedicalInformationManager;
 import interfaces.PatientManager;
+import interfaces.SymptomManager;
 import interfaces.UserManager;
 import jdbc.*;
 import ReceiveData.*;
-import pojos.Patient;
-import pojos.Role;
-import pojos.User;
+import pojos.*;
 //prueba
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -146,7 +146,7 @@ public class Main {
                 int opcion = recieveDataViaNetwork.receiveInt();
                 switch(opcion){
                     case 1:
-                        System.out.println("1. Insert medical information");
+                        //patientInsertMedicalInformartion(recieveDataViaNetwork, sendDataViaNetwork, socket, patientManager, symptomManager);
                         break;
                     case 2:
                         System.out.println("2. Record Signal");
@@ -409,6 +409,29 @@ public class Main {
         } else {
             sendData.sendStrings("Error updating patient name.");
         }
+    }
+
+    private static void patientInsertMedicalInformartion(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        try{
+            String message = recieveDataViaNetwork.receiveString();
+            if(message.equals("send symptoms")){
+                //sendDataViaNetwork.sendSymptom();
+            }
+            System.out.println(message);
+            if(message.equals("OK")){
+                System.out.println("Medical information in process");
+                //Symptom symptom = symptomManager.getSymptomById()
+                //sendDataViaNetwork.sendSymptom(symptom);
+                MedicalInformation medicalInformation = recieveDataViaNetwork.receiveMedicalInformation();
+                System.out.println(medicalInformation.toString());
+                //medicalInformationManager.insertMedicalInformation(medicalInformation); //añadimos medical info a la DB
+            }
+
+        }catch (Exception e) {
+            System.out.println("Error or client disconnected");
+            // releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+        }
+
     }
 }
 

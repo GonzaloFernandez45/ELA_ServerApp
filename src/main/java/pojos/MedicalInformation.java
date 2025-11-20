@@ -21,6 +21,13 @@ public class MedicalInformation {
         this.medication = medication;
         this.feedback = feedback;
     }
+
+    public MedicalInformation(List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication) {
+        this.symptoms = symptoms;
+        this.reportDate = reportDate;
+        this.medication = medication;
+    }
+
     public Integer getId() {
         return id;
     }
