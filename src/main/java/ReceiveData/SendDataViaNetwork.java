@@ -35,15 +35,16 @@ public class SendDataViaNetwork {
         }
     }
     public void sendPatient(Patient patient) throws IOException{
-        //dataOutputStream.writeInt(patient.getId());
+        System.out.println("Sending patient data...");
+        dataOutputStream.writeInt(patient.getId());
         dataOutputStream.writeUTF(patient.getName());
         dataOutputStream.writeUTF(patient.getSurname());
         dataOutputStream.writeUTF(patient.getDni());
         dataOutputStream.writeUTF(String.valueOf(patient.getDateOfBirth()));
         dataOutputStream.writeUTF(patient.getSex());
-        dataOutputStream.writeUTF(String.valueOf(patient.getPhone()));
+        dataOutputStream.writeInt(patient.getPhone());
         dataOutputStream.writeUTF(patient.getEmail());
-        dataOutputStream.writeUTF(String.valueOf(patient.getInsurance()));
+        dataOutputStream.writeInt(patient.getInsurance());
         dataOutputStream.flush();
     }
 

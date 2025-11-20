@@ -191,7 +191,7 @@ public class Main {
                         System.out.println(patient.toString());
 
                         sendDataViaNetwork.sendPatient(patient);
-
+                        //
                         menuPaciente(patient, sendDataViaNetwork, recieveDataViaNetwork, socket);
                     }else{
                         sendDataViaNetwork.sendStrings("ERROR");}

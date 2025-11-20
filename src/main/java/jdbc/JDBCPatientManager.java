@@ -63,33 +63,52 @@ public class JDBCPatientManager implements PatientManager {
     }
 
     @Override
-    public Patient getPatientbyId(int id) {//para cuando el doctor escoge una paciente de la lista
-        try {
-            String sql = "SELECT * FROM patient WHERE id = " + id;
-            Statement stmt;
-            stmt = c.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            Patient p = null;
-            while(rs.next()){
-                p= new Patient(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("surname"),
-                        rs.getString("dni"),
-                        rs.getDate("dob"),
-                        rs.getString("sex"),
-                        rs.getInt("phone"),
-                        rs.getString("email"),
-                        rs.getInt("insurance") );
-            }
-            return p;
-        }catch(SQLException e) {
-            System.out.println("Error in the database");
-            e.printStackTrace();
-        }
-        return null;
+    public Patient getPatientbyId(int id) { // para cuando el doctor escoge un paciente de la lista
+        String query = "SELECT * FROM patient WHERE id = ?;";
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        Patient p = null;
 
+        try {
+            stmt = c.prepareStatement(query);
+            stmt.setInt(1, id);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int patientId = rs.getInt("id");
+                String name = rs.getString("name");
+                String surname = rs.getString("surname");
+                String dni = rs.getString("dni");
+                String dobString = rs.getString("dob");
+                long millis = Long.parseLong(dobString);
+                Date dob = new Date(millis);
+                String sex = rs.getString("sex");
+                int phone = rs.getInt("phone");
+                String email = rs.getString("email");
+                int insurance = rs.getInt("insurance");
+
+                p = new Patient(patientId, name, surname, dni, dob, sex, phone, email, insurance);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return p;
     }
+
 
     @Override
     public void updatePatient(Patient p) {//la opcion del doctor de "modify patient data"
