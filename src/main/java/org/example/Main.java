@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +15,8 @@ import interfaces.UserManager;
 import jdbc.*;
 import ReceiveData.*;
 import pojos.*;
+import jdbc.JDBCPatientManager;
+
 //prueba
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -217,17 +218,19 @@ public class Main {
         }
     }
 
-    public static void addFeedback (Socket socket) throws IOException {
-            ReceiveDataViaNetwork receiveDataViaNetwork = new ReceiveDataViaNetwork(socket);
-            int patientId = receiveDataViaNetwork.receiveInt();
+    public static void addFeedback (int patientid, Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork ) throws IOException {
+          // Recibir el ID del paciente desde el cliente
 
-            String feedback = receiveDataViaNetwork.receiveString();
+        // Recibir el feedback del doctor
+        String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
+        ConnectionManager conMan = new ConnectionManager();
+        JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
 
-            JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-            String responseMessage = patientManager.addFeedback(patientId,feedback);
+        // Procesar el feedback (en este caso, guardarlo en la base de datos)
+        String responseMessage = patientManager.addFeedback(patientid,feedback);// Procesar y guardar el feedback
 
-            SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
-            sendData.sendStrings(responseMessage);
+        // Enviar respuesta al doctor
+        sendDataViaNetwork.sendStrings(responseMessage);
 
     }
     public static void updatePatientName(Socket socket) throws IOException {
