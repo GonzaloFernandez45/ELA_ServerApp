@@ -13,6 +13,7 @@ public class ConnectionManager {
     private PatientManager pMan;
     private SymptomManager SympMan;
     private MedicalInformationManager MedMan;
+    private UserManager uMan;
 
     public Connection getConnection() {
         return conn;
@@ -22,6 +23,10 @@ public class ConnectionManager {
         this.connect();
         this.docMan = new JDBCDoctorManager(this);
         this.pMan = new JDBCPatientManager(this);
+        //this.SympMan = new JDBCSymptomManager(this);
+        //this.MedMan = new JDBCMedicalInformationManager(this);
+        //this.uMan = new JDBCUserManager(this);
+
 
         this.createTables();
         this.insertSymptoms();
@@ -133,34 +138,34 @@ public class ConnectionManager {
             insertSymptom1.close();
 
             Statement insertSymptom2 = conn.createStatement();
-            String symptom2 = "INSERT INTO symptom VALUES(1, 'Difficulty moving limbs' )";
-            insertSymptom1.executeUpdate(symptom1);
-            insertSymptom1.close();
+            String symptom2 = "INSERT INTO symptom VALUES(2, 'Difficulty moving limbs' )";
+            insertSymptom2.executeUpdate(symptom2);
+            insertSymptom2.close();
 
             Statement insertSymptom3 = conn.createStatement();
-            String symptom3 = "INSERT INTO symptom VALUES(1, 'Difficulty speaking')";
-            insertSymptom1.executeUpdate(symptom2);
-            insertSymptom1.close();
+            String symptom3 = "INSERT INTO symptom VALUES(3, 'Difficulty speaking')";
+            insertSymptom3.executeUpdate(symptom3);
+            insertSymptom3.close();
 
             Statement insertSymptom4 = conn.createStatement();
-            String symptom4 = "INSERT INTO symptom VALUES(1, 'Difficulty swallowing')";
-            insertSymptom1.executeUpdate(symptom2);
-            insertSymptom1.close();
+            String symptom4 = "INSERT INTO symptom VALUES(4, 'Difficulty swallowing')";
+            insertSymptom4.executeUpdate(symptom4);
+            insertSymptom4.close();
 
             Statement insertSymptom5 = conn.createStatement();
-            String symptom5 = "INSERT INTO symptom VALUES(1, 'Muscle spasms or cramps')";
-            insertSymptom1.executeUpdate(symptom2);
-            insertSymptom1.close();
+            String symptom5 = "INSERT INTO symptom VALUES(5, 'Muscle spasms or cramps')";
+            insertSymptom5.executeUpdate(symptom5);
+            insertSymptom5.close();
 
             Statement insertSymptom6 = conn.createStatement();
-            String symptom6 = "INSERT INTO symptom VALUES(1, 'Shortness of breath')";
-            insertSymptom1.executeUpdate(symptom2);
-            insertSymptom1.close();
+            String symptom6 = "INSERT INTO symptom VALUES(6, 'Shortness of breath')";
+            insertSymptom6.executeUpdate(symptom6);
+            insertSymptom6.close();
 
             Statement insertSymptom7 = conn.createStatement();
-            String symptom7 = "INSERT INTO symptom VALUES(1, 'Weak neck muscles')";
-            insertSymptom1.executeUpdate(symptom2);
-            insertSymptom1.close();
+            String symptom7 = "INSERT INTO symptom VALUES(7, 'Weak neck muscles')";
+            insertSymptom7.executeUpdate(symptom7);
+            insertSymptom7.close();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("UNIQUE constraint failed")) {

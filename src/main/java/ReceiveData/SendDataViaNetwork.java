@@ -97,8 +97,17 @@ public class SendDataViaNetwork {
         dataOutputStream.flush();
     }
 
-    public void sendSymptom(Symptom symptom) throws IOException {
-        dataOutputStream.writeUTF(symptom.getDescription());
+    public void sendSymptoms(List<Symptom> symptoms) throws IOException {
+        // 1. Enviar cuántos síntomas vienen
+        dataOutputStream.writeInt(symptoms.size());
+
+        // 2. Enviar cada síntoma (ajusta los campos a lo que tenga tu clase Symptom)
+        for (Symptom symptom : symptoms) {
+            dataOutputStream.writeInt(symptom.getId());
+            dataOutputStream.writeUTF(symptom.getDescription());
+            // si tu Symptom tiene más cosas, las vas escribiendo aquí en el mismo orden
+        }
+
         dataOutputStream.flush();
     }
 
