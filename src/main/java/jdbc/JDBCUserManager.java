@@ -4,10 +4,7 @@ import interfaces.UserManager;
 import pojos.Role;
 import pojos.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class JDBCUserManager implements UserManager {
     private static Connection c;
@@ -27,8 +24,14 @@ public class JDBCUserManager implements UserManager {
             pstmt.setString(1, user.getEmail());
             pstmt.setString(2, new String(user.getPassword()));
             pstmt.setString(3, user.getRole().toString());
-            pstmt.setInt(4, user.getPatient_id());
-            pstmt.setInt(5, user.getDoctor_id());
+            if (user.getRole().getName().equals("Patient")) {
+                pstmt.setInt(4, user.getPatient_id());
+                pstmt.setNull(5, Types.INTEGER);
+            }else{
+                pstmt.setNull(4, Types.INTEGER);
+                pstmt.setInt(5, user.getDoctor_id());
+            }
+
             pstmt.executeUpdate();
             pstmt.close();
         }catch (SQLException e) {
