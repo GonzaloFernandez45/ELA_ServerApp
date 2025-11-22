@@ -51,7 +51,7 @@ public class Main {
                         sendDataViaNetwork.sendStrings("PATIENT");
                         patientMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, patientManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
                     } else if (message == 2) {
-                        sendDataViaNetwork.sendStrings("Doctor");
+                        sendDataViaNetwork.sendStrings("DOCTOR");
                         doctorMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
                     }
 
