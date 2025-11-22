@@ -21,13 +21,14 @@ public class JDBCUserManager implements UserManager {
     @Override
     public void addUser(User user) {
         try {
-            String template = "INSERT INTO user (email, password, role, patient_id) VALUES (?, ?, ?, ?)";
+            String template = "INSERT INTO user (email, password, role, patient_id, doctor_id) VALUES (?, ?, ?, ?,?)";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(template);
             pstmt.setString(1, user.getEmail());
             pstmt.setString(2, new String(user.getPassword()));
             pstmt.setString(3, user.getRole().toString());
             pstmt.setInt(4, user.getPatient_id());
+            pstmt.setInt(5, user.getDoctor_id());
             pstmt.executeUpdate();
             pstmt.close();
         }catch (SQLException e) {

@@ -59,7 +59,8 @@ public class SendDataViaNetwork {
     }
 
     public void sendDoctor(Doctor doctor) throws IOException {
-        //dataOutputStream.writeInt(doctor.getId());
+        System.out.println("Sending doctor data...");
+        dataOutputStream.writeInt(doctor.getId());
         dataOutputStream.writeUTF(doctor.getName());
         dataOutputStream.writeUTF(doctor.getSurname());
         dataOutputStream.writeUTF(doctor.getDNI());
