@@ -46,7 +46,7 @@ public class JDBCPatientManager implements PatientManager {
     public List<Patient> listPatients() {
         List<Patient> patients = new ArrayList<Patient>();
         try {
-            String sql = "SELECT name, surname, insurance FROM patient";
+            String sql = "SELECT * FROM patient";
             PreparedStatement pstmt = c.prepareStatement(sql);
             ResultSet rs = pstmt.executeQuery();
             while(rs.next()) {

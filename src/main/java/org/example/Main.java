@@ -52,7 +52,7 @@ public class Main {
                         patientMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, patientManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
                     } else if (message == 2) {
                         sendDataViaNetwork.sendStrings("DOCTOR");
-                        doctorMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
+                        doctorMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManager, patientManager); // atiende a este cliente y vuelve a escuchar
                     }
 
                 } catch (IOException e) {
@@ -223,7 +223,7 @@ public class Main {
         }
     }
 
-    private static void doctorMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, JDBCUserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManagerr) throws IOException {
+    private static void doctorMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, JDBCUserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManagerr, PatientManager patientManager) throws IOException {
         try{
             boolean doctorMenu = true;
 
@@ -232,11 +232,11 @@ public class Main {
                 switch(opcion){
                     case 1:
                         System.out.println("Doctor Log in");
-                        logInDoctor(recieveDataViaNetwork, sendDataViaNetwork,socket,doctorManager,userManager, symptomManager, medicalInformationManagerr);
+                        logInDoctor(recieveDataViaNetwork, sendDataViaNetwork,socket,doctorManager,userManager, symptomManager, medicalInformationManagerr, patientManager);
                         break;
                     case 2:
                         System.out.println("Doctor register");
-                        doctorRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManagerr);
+                        doctorRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManagerr, patientManager);
                         break;
                     case 3:
                         doctorMenu = false;
@@ -253,7 +253,7 @@ public class Main {
         }
     }
 
-    private static void doctorRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+    private static void doctorRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
         try{
             String message = recieveDataViaNetwork.receiveString();
             System.out.println(message);
@@ -274,7 +274,8 @@ public class Main {
                 sendDataViaNetwork.sendStrings("SUCCESS");
 
                 doctor.setId(doctor_id);
-                menuDoctor(doctor, sendDataViaNetwork,recieveDataViaNetwork , socket, doctorManager, symptomManager, medicalInformationManager);
+
+                menuDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
 
             }else{
                 System.out.println("Error in register");
@@ -285,11 +286,50 @@ public class Main {
             releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
         }
     }
+    private static void selectPatientForDoctor(
+            Doctor doctor,
+            SendDataViaNetwork sendData,
+            ReceiveDataViaNetwork receiveData,
+            PatientManager patientManager
+    ) throws IOException {
 
-    private static void menuDoctor(Doctor doctor, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        // 1. Obtener lista de pacientes
+        List<Patient> patients = patientManager.listPatients();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("PATIENT LIST:\n");
+        for (Patient p : patients) {
+            sb.append("ID: ").append(p.getId())
+                    .append(" | Name: ").append(p.getName()).append(" ").append(p.getSurname())
+                    .append("\n");
+        }
+
+        // 2. Enviar lista al doctor
+        sendData.sendStrings(sb.toString());
+
+        // 3. Recibir el ID seleccionado por el doctor
+        int selectedId = receiveData.receiveInt();
+
+        // 4. Buscar paciente
+        Patient selected = patientManager.getPatientbyId(selectedId);
+
+        if (selected != null) {
+            sendData.sendStrings(selected.toString());
+            System.out.println("Doctor selected patient: " + selected.getName());
+        } else {
+            sendData.sendStrings("ERROR: Patient not found");
+            return;
+        }
+
+        // 5. Aquí puedes entrar en el menú del doctor con ese paciente
+        // Si no tienes menú multi-paciente, simplemente termina aquí por ahora.
+    }
+
+    private static void menuDoctor(Doctor doctor, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
         try{
+            System.out.println("Doctor requested patient list");;
+            selectPatientForDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, patientManager);
             boolean doctorMenu = true;
-
             while(doctorMenu){
                 int opcion = recieveDataViaNetwork.receiveInt();
                 switch(opcion){
@@ -318,7 +358,7 @@ public class Main {
             releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
         }
     }
-    private static void logInDoctor(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+    private static void logInDoctor(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
         try{
             sendDataViaNetwork.sendStrings("Doctor log in");
             String message = recieveDataViaNetwork.receiveString();
@@ -334,12 +374,10 @@ public class Main {
                     int doctor_id = doctorManager.getDoctorIDFromEmail(user.getEmail());
                     Doctor doctor = doctorManager.getDoctorbyId(doctor_id);
                     user.setDoctor_id(doctor_id);
-
                     System.out.println(doctor.toString());
-
                     sendDataViaNetwork.sendDoctor(doctor);
-                    //
-                    menuDoctor(doctor, sendDataViaNetwork,recieveDataViaNetwork , socket, doctorManager, symptomManager, medicalInformationManager);
+                    menuDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
+
                 }else{
                     sendDataViaNetwork.sendStrings("ERROR");}
             }else{
@@ -577,5 +615,6 @@ public class Main {
         }
 
     }
+
 }
 
