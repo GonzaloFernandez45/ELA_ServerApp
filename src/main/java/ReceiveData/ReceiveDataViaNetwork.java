@@ -76,17 +76,24 @@ public class ReceiveDataViaNetwork {
         return patient;
     }
 
-    public Doctor receiveDoctor() throws IOException{
+    public Doctor receiveDoctor(){
         Doctor doctor = null;
-        int id = dataInputStream.readInt();
-        String name = dataInputStream.readUTF();
-        String surname = dataInputStream.readUTF();
-        String dni = dataInputStream.readUTF();
-        Date birthDate = Date.valueOf(dataInputStream.readUTF());
-        String sex = dataInputStream.readUTF();
-        String email = dataInputStream.readUTF();
-        doctor = new Doctor(id, name, surname, dni, birthDate, sex, email);
+        try {
+            System.out.println("Receiving doctor data...");
+            String name = dataInputStream.readUTF();
+            String surname = dataInputStream.readUTF();
+            String DNI = dataInputStream.readUTF();
+            java.sql.Date birthDate = Date.valueOf(dataInputStream.readUTF());
+            String sex = dataInputStream.readUTF();
+            String email = dataInputStream.readUTF();
+            doctor = new Doctor(name, surname, DNI, birthDate, sex, email);
 
+        } catch (EOFException ex){
+            System.out.println("Data not correctly read.");
+        }catch(IOException e){
+            System.err.println("Error receiving patient data: " + e.getMessage());
+            e.printStackTrace();
+        }
         return doctor;
     }
 

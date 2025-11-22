@@ -14,8 +14,19 @@ public class Doctor {
     private String email;
     private List<Patient> patients;
 
+    public Doctor() {
+    }
+
     public Doctor(Integer id, String name, String surname, String DNI, java.sql.Date birthDate, String sex, String email) {
         this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.DNI = DNI;
+        this.birthDate = birthDate;
+        this.sex = sex;
+        this.email = email;
+    }
+    public Doctor(String name, String surname, String DNI, java.sql.Date birthDate, String sex, String email) {
         this.name = name;
         this.surname = surname;
         this.DNI = DNI;

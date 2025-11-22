@@ -8,6 +8,7 @@ public class User {
     private String email;
     private byte[] password;
     private Role role;
+    public int doctor_id;
 
 
 
@@ -63,6 +64,9 @@ public class User {
     }
     public void setPatient_id(int patient_id) {
         this.patient_id = patient_id;
+    }
+    public void setDoctor_id(int doctor_id) {
+        this.doctor_id = doctor_id;
     }
 
 

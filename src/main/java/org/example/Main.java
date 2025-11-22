@@ -9,10 +9,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import interfaces.MedicalInformationManager;
-import interfaces.PatientManager;
-import interfaces.SymptomManager;
-import interfaces.UserManager;
+import interfaces.*;
 import jdbc.*;
 import ReceiveData.*;
 import pojos.*;
@@ -38,6 +35,7 @@ public class Main {
             JDBCSymptomManager symptomManager = new JDBCSymptomManager(conMan);
             JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(conMan);
             Socket socket = serverSocket.accept();
+            JDBCDoctorManager doctorManager = new JDBCDoctorManager(conMan);
 
             ReceiveDataViaNetwork recieveDataViaNetwork = null;
             SendDataViaNetwork sendDataViaNetwork = null;
@@ -52,6 +50,9 @@ public class Main {
                     if(message == 1){
                         sendDataViaNetwork.sendStrings("PATIENT");
                         patientMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, patientManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
+                    } else if (message == 2) {
+                        sendDataViaNetwork.sendStrings("Doctor");
+                        doctorMenu(sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManager); // atiende a este cliente y vuelve a escuchar
                     }
 
                 } catch (IOException e) {
@@ -221,6 +222,137 @@ public class Main {
             ex.printStackTrace();
         }
     }
+
+    private static void doctorMenu(SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, JDBCUserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManagerr) throws IOException {
+        try{
+            boolean doctorMenu = true;
+
+            while(doctorMenu){
+                int opcion = recieveDataViaNetwork.receiveInt();
+                switch(opcion){
+                    case 1:
+                        System.out.println("Doctor Log in");
+                        logInDoctor(recieveDataViaNetwork, sendDataViaNetwork,socket,doctorManager,userManager, symptomManager, medicalInformationManagerr);
+                        break;
+                    case 2:
+                        System.out.println("Doctor register");
+                        doctorRegister(recieveDataViaNetwork,sendDataViaNetwork, socket, doctorManager, userManager, symptomManager, medicalInformationManagerr);
+                        break;
+                    case 3:
+                        doctorMenu = false;
+                        System.out.println("Doctor disconnected");
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        break;
+                }
+            }
+        }catch(IOException ex){
+            System.out.println(ex.getMessage());
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
+        }
+    }
+
+    private static void doctorRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        try{
+            String message = recieveDataViaNetwork.receiveString();
+            System.out.println(message);
+
+            if(message.equals("OK")){
+                System.out.println("Registering Doctor...");
+                Doctor doctor = recieveDataViaNetwork.receiveDoctor();
+                System.out.println(doctor.toString());
+                User user = recieveDataViaNetwork.recieveUser();
+                System.out.println(user.toString());
+                doctorManager.addDoctor(doctor); //Primero añadir al paciente a la DB
+
+                int doctor_id = doctorManager.getDoctorIDFromEmail(doctor.getEmail()); //Obtener su ID
+
+                user.setDoctor_id(doctor_id); //Asignar la Foreign Key al usuario
+                userManager.addUser(user); //Añadir el usuario a la DB
+
+                sendDataViaNetwork.sendStrings("SUCCESS");
+
+                doctor.setId(doctor_id);
+                menuDoctor(doctor, sendDataViaNetwork,recieveDataViaNetwork , socket, doctorManager, symptomManager, medicalInformationManager);
+
+            }else{
+                System.out.println("Error in register");
+
+            }
+        }catch(IOException ex){
+            System.out.println("Error or client disconnected");
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+        }
+    }
+
+    private static void menuDoctor(Doctor doctor, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        try{
+            boolean doctorMenu = true;
+
+            while(doctorMenu){
+                int opcion = recieveDataViaNetwork.receiveInt();
+                switch(opcion){
+                    case 1:
+                        System.out.println("Insert medical info");
+                        break;
+                    case 2:
+                        System.out.println("2. Record Signal");
+                        break;
+                    case 3:
+                        System.out.println("3. Send Signal");
+                        break;
+                    case 4:
+                        System.out.println("4. See doctor´s feedback");
+                        break;
+                    case 0:
+                        System.out.println("0. Exit");
+                        break;
+                    default:
+                        System.out.println("Invalid option");
+                        break;
+                }
+            }
+        }catch(Exception ex){
+            System.out.println(ex.getMessage());
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
+        }
+    }
+    private static void logInDoctor(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        try{
+            sendDataViaNetwork.sendStrings("Doctor log in");
+            String message = recieveDataViaNetwork.receiveString();
+            System.out.println(message);
+            Role role = new Role("Doctor");
+
+            if(message.equals("OK")){
+                User user = recieveDataViaNetwork.recieveUser();
+                boolean correctPassword = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
+                if(correctPassword){
+                    sendDataViaNetwork.sendStrings("SUCCESS");
+
+                    int doctor_id = doctorManager.getDoctorIDFromEmail(user.getEmail());
+                    Doctor doctor = doctorManager.getDoctorbyId(doctor_id);
+                    user.setDoctor_id(doctor_id);
+
+                    System.out.println(doctor.toString());
+
+                    sendDataViaNetwork.sendDoctor(doctor);
+                    //
+                    menuDoctor(doctor, sendDataViaNetwork,recieveDataViaNetwork , socket, doctorManager, symptomManager, medicalInformationManager);
+                }else{
+                    sendDataViaNetwork.sendStrings("ERROR");}
+            }else{
+                System.out.println("Error in login");
+            }
+
+
+        } catch (IOException e) {
+            System.out.println("Error or client disconnected");
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+        }
+    }
+
 
     public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork ) throws IOException {
           // Recibir el ID del paciente desde el cliente
