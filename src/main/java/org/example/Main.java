@@ -327,17 +327,18 @@ public class Main {
                 int opcion = recieveDataViaNetwork.receiveInt();
                 switch(opcion){
                     case 1:
-                        System.out.println("1. View patient details");
+                        System.out.println("SELECTED: View patient details");
                         viewPatient(socket, recieveDataViaNetwork,sendDataViaNetwork);
                         break;
                     case 2:
-                        System.out.println("2. Add feedback");
+                        System.out.println("SELECTED: Add feedback");
+                        addFeedback(socket, recieveDataViaNetwork,sendDataViaNetwork);
                         break;
                     case 3:
-                        System.out.println("3. View recorded signal");
+                        System.out.println("SELECTED: View recorded signal");
                         break;
                     case 4:
-                        System.out.println("4. Change patient data");
+                        System.out.println("SELECTED: Change patient data");
                         break;
                     case 0:
                         System.out.println("0. Exit");
@@ -386,32 +387,29 @@ public class Main {
     }
 
     public static void viewPatient(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
-            int pat_id = receiveDataViaNetwork.receiveInt();
-            System.out.println("The doctor has requested the information of the patient:" + pat_id);
-            ConnectionManager connectionManager = new ConnectionManager();
-            JDBCPatientManager patientManager = new JDBCPatientManager(connectionManager);
-            Patient patient = patientManager.getPatientbyId(pat_id);
-            if(patient != null){
-                sendDataViaNetwork.sendPatient(patient);
-            }
-            else {
-                sendDataViaNetwork.sendStrings("ERROR - PATIENT NOT FOUND");
-            }
+        int pat_id = receiveDataViaNetwork.receiveInt();
+        System.out.println("The doctor has requested the information of the patient:" + pat_id);
+        ConnectionManager connectionManager = new ConnectionManager();
+        JDBCPatientManager patientManager = new JDBCPatientManager(connectionManager);
+        Patient patient = patientManager.getPatientbyId(pat_id);
+        if(patient != null){
+            sendDataViaNetwork.sendStrings(patient.toString());
+        }
+        else {
+            sendDataViaNetwork.sendStrings("ERROR - PATIENT NOT FOUND");
+        }
 
     }
 
 
     public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork ) throws IOException {
-          // Recibir el ID del paciente desde el cliente
-
-        // Recibir el feedback del doctor
-        int patientid = receiveDataViaNetwork.receiveInt();
+        int patient_id = receiveDataViaNetwork.receiveInt();
         String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
         ConnectionManager conMan = new ConnectionManager();
         JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
 
         // Procesar el feedback (en este caso, guardarlo en la base de datos)
-        String responseMessage = patientManager.addFeedback(patientid,feedback);// Procesar y guardar el feedback
+        String responseMessage = patientManager.addFeedback(patient_id,feedback);// Procesar y guardar el feedback
 
         // Enviar respuesta al doctor
         sendDataViaNetwork.sendStrings(responseMessage);

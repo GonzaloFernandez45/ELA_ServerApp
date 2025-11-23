@@ -11,4 +11,5 @@ public interface PatientManager {
     Patient getPatientbyId(int id);
     void updatePatient(Patient p);
     int getPatientIDFromEmail(String email);
+
 }

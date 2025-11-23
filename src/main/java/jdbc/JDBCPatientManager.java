@@ -325,11 +325,11 @@ public class JDBCPatientManager implements PatientManager {
 
     public String addFeedback (int patientId, String feedback) {
         try{
-            String query = "INSERT INTO feedback (patient_id, feedback) VALUES (?, ?)";
+            String query = "UPDATE medical_information SET feedback = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt=c.prepareStatement(query);
-            pstmt.setInt(1,patientId);
-            pstmt.setString(2,feedback);
+            pstmt.setString(1,feedback);
+            pstmt.setInt(2,patientId);
             pstmt.executeUpdate();
             pstmt.close();
             return "Feedback added";
