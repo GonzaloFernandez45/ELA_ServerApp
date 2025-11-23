@@ -38,7 +38,7 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public void updateMedicalInformation(int patient_id,String feedback) {
+    public void updateMedicalInformation(int patient_id, String feedback) {
         try {
             String sql = "UPDATE medicalInformation SET feedback = ? WHERE patient_id = ?";
             PreparedStatement pstmt = c.prepareStatement(sql);

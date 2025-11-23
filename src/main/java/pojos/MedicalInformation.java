@@ -91,13 +91,16 @@ public class MedicalInformation {
     }
 
     @Override
+
+    @Override
     public String toString() {
         return "MedicalInformation{" +
                 "id=" + id +
                 ", symptoms=" + symptoms +
                 ", reportDate=" + reportDate +
                 ", medication=" + medication +
-                ", feedback='" + feedback +
+                ", feedback='" + feedback + '\'' +
+                ", patient_id=" + patient_id +
                 '}';
     }
 }
