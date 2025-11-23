@@ -402,19 +402,28 @@ public class Main {
     }
 
 
-//    public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork,MedicalInformationManager medicalInformationManager, SymptomManager symptomManager ) throws IOException {
+//    public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
 //        int patient_id = receiveDataViaNetwork.receiveInt();
 //        String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
 //        ConnectionManager conMan = new ConnectionManager();
 //        JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
-//        MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformation()
+//        JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(conMan);
+//        List<MedicalInformation> medicalInformation = medicalInformationManager.getMedicalInfoByPatientId(patient_id);
 //        // Procesar el feedback (en este caso, guardarlo en la base de datos)
-//        String responseMessage = medi.addFeedback(patient_id,feedback);// Procesar y guardar el feedback
+//        for(MedicalInformation mi : medicalInformation){
+//            sendDataViaNetwork.send;
+//        }
+//
+//
+//
+//        medicalInformationManager.updateMedicalInformation(patient_id,feedback);// Procesar y guardar el feedback
 //
 //        // Enviar respuesta al doctor
-//        sendDataViaNetwork.sendStrings(responseMessage);
+//        //sendDataViaNetwork.sendStrings(responseMessage);
 //
 //    }
+
+
     public static void updatePatientName(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
 
         String newName = receiveDataViaNetwork.receiveString();

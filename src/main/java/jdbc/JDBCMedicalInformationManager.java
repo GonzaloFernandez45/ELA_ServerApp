@@ -2,11 +2,8 @@ package jdbc;
 
 import interfaces.MedicalInformationManager;
 import pojos.MedicalInformation;
-import pojos.Patient;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
@@ -41,13 +38,13 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public void updateMedicalInformation(MedicalInformation m) {
+    public void updateMedicalInformation(int patient_id,String feedback) {
         try {
-            String sql = "UPDATE medicalInformation SET feedback = ? WHERE id = ?";
+            String sql = "UPDATE medicalInformation SET feedback = ? WHERE patient_id = ?";
             PreparedStatement pstmt = c.prepareStatement(sql);
 
-            pstmt.setString(1, m.getFeedback());  // Asumimos que el feedback ahora está presente
-            pstmt.setInt(2, m.getId());  // Usamos el ID de la información médica para actualizar el registro específico
+            pstmt.setString(1, feedback);  // Asumimos que el feedback ahora está presente
+            pstmt.setInt(2, patient_id);  //
 
             pstmt.executeUpdate();
             pstmt.close();
@@ -63,8 +60,8 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public MedicalInformation getMedicalInfoByPatientId(int patientId) {
-        MedicalInformation m = null;
+    public List<MedicalInformation> getMedicalInfoByPatientId(int patientId) {
+        List<MedicalInformation> medicalInformationList = null;
 
         try {
             String sql = "SELECT * FROM medicalInformation WHERE patient_id = ?";
@@ -72,12 +69,25 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
             ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                m = new MedicalInformation();
+            while(rs.next()) {
+                MedicalInformation m = new MedicalInformation();
+                //EL ID
                 m.setId(rs.getInt("id"));
-                m.setPatient_id(rs.getInt("patient_id"));
+                //El date, se guarda en milisegundos en la db
+                String reportDateString = rs.getString("reportDate");
+                long millis = Long.parseLong(reportDateString);
+                Date reportDate = new Date(millis);
+                m.setReportDate(reportDate);
+                //Para sacar una lista a partir de un string con delimitadores
+                String medsString = rs.getString("medication");
+                List<String> medication = (medsString == null || medsString.isEmpty())
+                        ? List.of()
+                        : List.of(medsString.split(","));
+                m.setMedication(medication);
+                //set el feedback
                 m.setFeedback(rs.getString("feedback"));
+                //lo vamos añadiendo a una lista de medical infos
+                medicalInformationList.add(m);
             }
 
             rs.close();
@@ -88,6 +98,7 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
             e.printStackTrace();
         }
 
-        return m;
+        return medicalInformationList;
     }
+
 }
