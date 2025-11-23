@@ -402,25 +402,33 @@ public class Main {
         }
 
     }
+//    public static void viewPatientMedInfo(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork)throws IOException{
+//        int patient_id = receiveDataViaNetwork.receiveInt();
+//        System.out.println("The doctor has requested the Medical information of the patient:");
+//        ConnectionManager connectionManager = new ConnectionManager();
+//        JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(connectionManager);
+//        List<MedicalInformation> medicalInformation = medicalInformationManager.getMedicalInfoByPatientId(patient_id);
+//        sendDataViaNetwork.sendInt(medicalInformation.size());
+//        for(MedicalInformation mi : medicalInformation){
+//            sendDataViaNetwork.sendInt(mi.getId());
+//            sendDataViaNetwork.sendStrings(mi.getReportDate().toString());
+//            sendDataViaNetwork.sendInt(mi.getMedication().size());
+//            for(String medication : mi.getMedication()){
+//                sendDataViaNetwork.sendStrings(medication);
+//            }
+//            sendDataViaNetwork.sendInt(mi.getSymptoms().size());
+//            for(Symptom symptom : mi.getSymptoms()){
+//                sendDataViaNetwork.sendStrings(symptom.getDescription());
+//            }
+//        }
+//    }
     public static void viewPatientMedInfo(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork)throws IOException{
         int patient_id = receiveDataViaNetwork.receiveInt();
-        System.out.println("The doctor has requested the Medical information of the patient:" + );
+        System.out.println("The doctor has requested the Medical information of the patient:");
         ConnectionManager connectionManager = new ConnectionManager();
         JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(connectionManager);
-        List<MedicalInformation> medicalInformation = medicalInformationManager.getMedicalInfoByPatientId(patient_id);
-        sendDataViaNetwork.sendInt(medicalInformation.size());
-        for(MedicalInformation mi : medicalInformation){
-            sendDataViaNetwork.sendInt(mi.getId());
-            sendDataViaNetwork.sendStrings(mi.getReportDate().toString());
-            sendDataViaNetwork.sendInt(mi.getMedication().size());
-            for(String medication : mi.getMedication()){
-                sendDataViaNetwork.sendStrings(medication);
-            }
-            sendDataViaNetwork.sendInt(mi.getSymptoms().size());
-            for(Symptom symptom : mi.getSymptoms()){
-                sendDataViaNetwork.sendStrings(symptom.getDescription());
-            }
-        }
+        List<MedicalInformation> medicalInformationList = medicalInformationManager.getMedicalInfoByPatientId(patient_id);
+        sendDataViaNetwork.sendMedicalInformationList(medicalInformationList);
     }
 
 
