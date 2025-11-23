@@ -1,6 +1,7 @@
 package jdbc;
 
 import interfaces.PatientManager;
+import pojos.MedicalInformation;
 import pojos.Patient;
 import pojos.User;
 
@@ -323,25 +324,7 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
-    public String addFeedback (int patientId, String feedback) {
-        try{
-            String query = "UPDATE medical_information SET feedback = ? WHERE id = ?";
-            PreparedStatement pstmt;
-            pstmt=c.prepareStatement(query);
-            pstmt.setString(1,feedback);
-            pstmt.setInt(2,patientId);
-            pstmt.executeUpdate();
-            pstmt.close();
-            return "Feedback added";
 
-        }catch(SQLException e ){
-            System.out.println("Error in the database");
-            e.printStackTrace();
-            return "FEEDBACK NOT ADDED";
-
-        }
-
-    }
 
     @Override
     public int getPatientIDFromEmail(String email){

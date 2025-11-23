@@ -336,6 +336,7 @@ public class Main {
                         break;
                     case 3:
                         System.out.println("SELECTED: View recorded signal");
+
                         break;
                     case 4:
                         System.out.println("SELECTED: Change patient data");

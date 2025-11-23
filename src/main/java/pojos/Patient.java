@@ -2,6 +2,7 @@
 package pojos;
 
 import java.sql.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class Patient {
@@ -14,9 +15,20 @@ public class Patient {
     private Integer phone;
     private String email;
     private Integer insurance;
-
     private Integer doctor_id;
-    private MedicalInformation medicalInformation;
+    private List<MedicalInformation> medicalInformation;
+
+    public Patient(String name, String surname, String dni, Date dateOfBirth, String sex, Integer phone, String email, Integer insurance,List<MedicalInformation> medicalInformation) {
+        this.name = name;
+        this.surname = surname;
+        this.dni = dni;
+        this.dateOfBirth = dateOfBirth;
+        this.sex = sex;
+        this.phone = phone;
+        this.email = email;
+        this.insurance = insurance;
+        this.medicalInformation = medicalInformation;
+    }
 
     public Patient(String name, String surname, String dni, Date dateOfBirth, String sex, Integer phone, String email, Integer insurance) {
         this.name = name;
@@ -29,7 +41,20 @@ public class Patient {
         this.insurance = insurance;
     }
 
-    public Patient(int id, String name, String surname, String dni, Date dateOfBirth, String sex, Integer phone, String email, Integer insurance) {
+    public Patient(int id, String name, String surname, String dni, Date dateOfBirth, String sex, Integer phone, String email, Integer insurance, List<MedicalInformation> medicalInformation) {
+        this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.dni = dni;
+        this.dateOfBirth = dateOfBirth;
+        this.sex = sex;
+        this.phone = phone;
+        this.email = email;
+        this.insurance = insurance;
+        this.medicalInformation = medicalInformation;
+    }
+
+    public Patient(Integer id, String name, String surname, String dni, Date dateOfBirth, String sex, Integer phone, String email, Integer insurance) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -120,6 +145,14 @@ public class Patient {
         this.insurance = insurance;
     }
 
+    public List<MedicalInformation> getMedicalInformation() {
+        return medicalInformation;
+    }
+
+    public void setMedicalInformation(List<MedicalInformation> medicalInformation) {
+        this.medicalInformation = medicalInformation;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -144,6 +177,7 @@ public class Patient {
                 ", phone=" + phone +
                 ", email='" + email + '\'' +
                 ", insurance=" + insurance +
+                ", medicalInformation=" + medicalInformation +
                 '}';
     }
 }
