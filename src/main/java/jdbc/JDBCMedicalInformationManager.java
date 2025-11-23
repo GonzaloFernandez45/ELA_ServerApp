@@ -2,10 +2,12 @@ package jdbc;
 
 import interfaces.MedicalInformationManager;
 import pojos.MedicalInformation;
+import pojos.Patient;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
     private static Connection c;
@@ -57,7 +59,31 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public MedicalInformation getMedicalInformation(MedicalInformation m) {
-        return null;
+    public MedicalInformation getMedicalInfoByPatientId(int patientId) {
+        MedicalInformation m = null;
+
+        try {
+            String sql = "SELECT * FROM medicalInformation WHERE patient_id = ?";
+            PreparedStatement ps = c.prepareStatement(sql);
+
+            ps.setInt(1, patientId);
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                m = new MedicalInformation();
+                m.setId(rs.getInt("id"));
+                m.setPatient_id(rs.getInt("patient_id"));
+                m.setFeedback(rs.getString("feedback"));
+            }
+
+            rs.close();
+            ps.close();
+
+        } catch (SQLException e) {
+            System.out.println("Error retrieving medical information for patient " + patientId);
+            e.printStackTrace();
+        }
+
+        return m;
     }
 }

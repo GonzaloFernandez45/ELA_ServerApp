@@ -332,7 +332,6 @@ public class Main {
                         break;
                     case 2:
                         System.out.println("SELECTED: Add feedback");
-                        addFeedback(socket, recieveDataViaNetwork,sendDataViaNetwork);
                         break;
                     case 3:
                         System.out.println("SELECTED: View recorded signal");
@@ -403,19 +402,19 @@ public class Main {
     }
 
 
-    public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork ) throws IOException {
-        int patient_id = receiveDataViaNetwork.receiveInt();
-        String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
-        ConnectionManager conMan = new ConnectionManager();
-        JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
-
-        // Procesar el feedback (en este caso, guardarlo en la base de datos)
-        String responseMessage = patientManager.addFeedback(patient_id,feedback);// Procesar y guardar el feedback
-
-        // Enviar respuesta al doctor
-        sendDataViaNetwork.sendStrings(responseMessage);
-
-    }
+//    public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork,MedicalInformationManager medicalInformationManager, SymptomManager symptomManager ) throws IOException {
+//        int patient_id = receiveDataViaNetwork.receiveInt();
+//        String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
+//        ConnectionManager conMan = new ConnectionManager();
+//        JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
+//        MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformation()
+//        // Procesar el feedback (en este caso, guardarlo en la base de datos)
+//        String responseMessage = medi.addFeedback(patient_id,feedback);// Procesar y guardar el feedback
+//
+//        // Enviar respuesta al doctor
+//        sendDataViaNetwork.sendStrings(responseMessage);
+//
+//    }
     public static void updatePatientName(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
 
         String newName = receiveDataViaNetwork.receiveString();

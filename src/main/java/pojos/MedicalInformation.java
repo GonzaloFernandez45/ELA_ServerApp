@@ -10,9 +10,11 @@ public class MedicalInformation {
     private java.sql.Date reportDate;
     private List<String> medication;
     private String feedback;
-    private Patient patient;
+    private int patient_id;
 
 
+    public MedicalInformation() {
+    }
 
     public MedicalInformation(Integer id, List<Symptom> symptoms, java.sql.Date reportDate, List<String> medication, String feedback) {
         this.id = id;
@@ -56,6 +58,14 @@ public class MedicalInformation {
     }
     public String getFeedback() {return feedback;}
     public void setFeedback(String feedback) {this.feedback = feedback;}
+
+    public int getPatient_id() {
+        return patient_id;
+    }
+
+    public void setPatient_id(int patient_id) {
+        this.patient_id = patient_id;
+    }
 
     @Override
     public boolean equals(Object o) {
