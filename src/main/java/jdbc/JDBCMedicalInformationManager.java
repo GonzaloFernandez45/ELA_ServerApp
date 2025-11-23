@@ -22,12 +22,16 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     @Override
     public void insertMedicalInformation(MedicalInformation m) {
         try{
-            String template = "INSERT INTO medicalInformation (symptoms, reportDate, medication) VALUES (?, ?, ?)";
+            String template = "INSERT INTO medicalInformation (reportDate, medication, feedback) VALUES (?, ?, ?)";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(template);
-            pstmt.setString(1, String.valueOf(m.getSymptoms()));
-            pstmt.setString(2, String.valueOf(m.getReportDate()));
-            pstmt.setString(3, String.valueOf(m.getMedication()));
+            pstmt.setDate(1, m.getReportDate());
+
+            List<String> meds = m.getMedication();
+            String medsAsString = String.join(",", meds);
+            pstmt.setString(2, medsAsString);
+
+            pstmt.setString(3, m.getFeedback());
             pstmt.executeUpdate();
             pstmt.close();
         }catch (SQLException e) {
