@@ -100,5 +100,22 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
         return medicalInformationList;
     }
+    public boolean updateFeedback(int medicalInfoId, String feedback) {
+        String sql = "UPDATE medical_information SET feedback = ? WHERE id = ?";
+
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, feedback);
+            ps.setInt(2, medicalInfoId);  // Usamos el id de medical_information para actualizar un único registro
+
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0; // Si se actualizó al menos un registro, es éxito
+
+        } catch (SQLException e) {
+            System.out.println("Error updating feedback for medical information ID " + medicalInfoId);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 
 }

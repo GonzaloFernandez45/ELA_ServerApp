@@ -90,7 +90,7 @@ public class MedicalInformation {
         return Objects.hash(id, symptoms, reportDate, medication, feedback);
     }
 
-    @Override
+
 
     @Override
     public String toString() {

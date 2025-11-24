@@ -9,5 +9,6 @@ public interface MedicalInformationManager {
     void updateMedicalInformation(int patient_id, String feedback);
     public void deleteMedicalInformation(MedicalInformation m);
     public List<MedicalInformation> getMedicalInfoByPatientId(int id);
+    public boolean updateFeedback(int medicalInfoId, String feedback);
 
 }
