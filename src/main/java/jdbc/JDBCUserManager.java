@@ -24,13 +24,13 @@ public class JDBCUserManager implements UserManager {
             pstmt.setString(1, user.getEmail());
             pstmt.setString(2, new String(user.getPassword()));
             pstmt.setString(3, user.getRole().toString());
-            if (user.getRole().getName().equals("Patient")) {
+           /** if (user.getRole().getName().equals("Patient")) {
                 pstmt.setInt(4, user.getPatient_id());
                 pstmt.setNull(5, Types.INTEGER);
             }else{
                 pstmt.setNull(4, Types.INTEGER);
                 pstmt.setInt(5, user.getDoctor_id());
-            }
+            }**/
 
             pstmt.executeUpdate();
             pstmt.close();

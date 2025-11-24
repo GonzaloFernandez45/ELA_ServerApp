@@ -142,7 +142,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET name = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET name = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setString(1,newName);
@@ -165,7 +165,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET surname = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET surname = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setString(1,newSurname);
@@ -188,7 +188,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET dni = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET dni = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setString(1,newDni);
@@ -212,7 +212,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET dob = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET dob = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setDate(1,newDob);
@@ -229,17 +229,17 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
-    public boolean updatePatientPhone(int patientId, int newPatientPhone) {
+    public boolean updatePatientPhone(int id, int newPatientPhone) {
         if (newPatientPhone == 0){
             return false;
         }
 
         try{
-            String query = "UPDATE patient SET phone = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET phone = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setInt(1,newPatientPhone);
-            pstmt.setInt(2,patientId);
+            pstmt.setInt(2,id);
             pstmt.executeUpdate();
             pstmt.close();
             return true;

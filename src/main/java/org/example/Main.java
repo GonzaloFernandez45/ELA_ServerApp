@@ -513,240 +513,63 @@ public class Main {
     }
 
 
-    public static void updatePatientName(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
-
-        String newName = receiveDataViaNetwork.receiveString();
-        int patient_id = receiveDataViaNetwork.receiveInt();
-        if( newName.isEmpty() || newName== null){
-            System.out.println("No new name ");
-            return;
-        }
-
-        // Crear una instancia de JDBCPatientManager
-        ConnectionManager conMan= new ConnectionManager();
-        JDBCPatientManager patientManager = new JDBCPatientManager(conMan);
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientName(patient_id, newName);
-
-        if (success) {
-            sendDataViaNetwork.sendStrings("Patient name updated successfully.");
-        } else {
-            sendDataViaNetwork.sendStrings("Error updating patient name.");
-        }
-    }
-
-    public static void updatePatientSurname(Socket socket,ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
-        String newSurname = receiveDataViaNetwork.receiveString();
-        int patient_id = receiveDataViaNetwork.receiveInt();
-        if( newSurname.isEmpty() || newSurname== null){
-            System.out.println("No new surname ");
-            return;
-        }
-
-        // Crear una instancia de JDBCPatientManager
-        ConnectionManager conMan= new ConnectionManager();
-        JDBCPatientManager patientManager = new JDBCPatientManager(conMan);
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientSurname(patient_id, newSurname);
-
-        // Enviar respuesta al doctor
-        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
-        if (success) {
-            sendData.sendStrings("Patient surname updated successfully.");
-        } else {
-            sendData.sendStrings("Error updating patient surname.");
-        }
-    }
-    public static void updatePatientDNI(Socket socket,ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
-        // Recibir el ID del paciente
-        String newDNI = receiveDataViaNetwork.receiveString();
-        int patient_id = receiveDataViaNetwork.receiveInt();
-        if (newDNI.isEmpty() || newDNI== null){
-            System.out.println("No new DNI");
-        }
-
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientDNI(patient_id, newDNI);
-        if (success) {
-            sendDataViaNetwork.sendStrings("Patient  DNI updated successfully.");
-        } else {
-            sendDataViaNetwork.sendStrings("Error updating patient DNI.");
-        }
-    }
-
-    public static void updatePatientDob(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
-
-        // Recibir el nuevo nombre
-        int patient_id= receiveDataViaNetwork.receiveInt();
-        String newDobstr= receiveDataViaNetwork.receiveString();
-        java.sql.Date newDob = Date.valueOf(newDobstr);
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientDob(patient_id,newDob);
-
-        // Enviar respuesta al doctor
-        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
-        if (success) {
-            sendData.sendStrings("Patient dob updated successfully.");
-        } else {
-            sendData.sendStrings("Error updating patient dob.");
-        }
-    }
-
-    public static void updatePatientSex(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
-
-        // Recibir el nuevo nombre
-        String newSex = receiveDataViaNetwork.receiveString();
-        int patient_id = receiveDataViaNetwork.receiveInt();
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientSex(patient_id, newSex);
-
-        // Enviar respuesta al doctor
-        SendDataViaNetwork sendData = new SendDataViaNetwork(socket);
-        if (success) {
-            sendData.sendStrings("Patient name updated successfully.");
-        } else {
-            sendData.sendStrings("Error updating patient name.");
-        }
-    }
-    public static void updatePatientPhone(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
-        // Recibir el ID del paciente
-        int patientId = receiveDataViaNetwork.receiveInt();
-
-        // Recibir el nuevo nombre
-        int newPhone = receiveDataViaNetwork.receiveInt();
-        if (newPhone == 0){
-            System.out.println("No new phone ");
-            return;
-        }
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientPhone(patientId, newPhone);
-
-        if (success) {
-            sendDataViaNetwork.sendStrings("Patient phone updated successfully.");
-        } else {
-            sendDataViaNetwork.sendStrings("Error updating patient phone.");
-        }
-    }
-    public static void updatePatientInsurance(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
-
-        int patientId = receiveDataViaNetwork.receiveInt();
-
-        // Recibir el nuevo nombre
-        int newInsurance = receiveDataViaNetwork.receiveInt();
-        if (newInsurance == 0){
-            System.out.println("No new insurance");
-            return;
-        }
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientInsurance(patientId, newInsurance);
-
-        if (success) {
-            sendDataViaNetwork.sendStrings("Patient insurance updated successfully.");
-        } else {
-            sendDataViaNetwork.sendStrings("Error updating patient insurance.");
-        }
-    }
-    public static void updatePatientEmail(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork) throws IOException {
-        int patientId = receiveDataViaNetwork.receiveInt();
-
-        // Recibir el nuevo nombre
-        String newEmail = receiveDataViaNetwork.receiveString();
-        if (newEmail.isEmpty() || newEmail== null){
-            System.out.println("No new email");
-            return;
-        }
-
-        // Crear una instancia de JDBCPatientManager
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Llamar al método de JDBCPatientManager para actualizar el nombre
-        boolean success = patientManager.updatePatientEmail(patientId, newEmail);
-        if (success) {
-            sendDataViaNetwork.sendStrings("Patient name updated successfully.");
-        } else {
-            sendDataViaNetwork.sendStrings("Error updating patient name.");
-        }
-    }
     public static void updatePatientData(Socket socket,
-                                         ReceiveDataViaNetwork receiveDataViaNetwork,
-                                         SendDataViaNetwork sendDataViaNetwork) throws IOException {
+                                         ReceiveDataViaNetwork in,
+                                         SendDataViaNetwork out) throws IOException {
 
-        // Paso 1: Recibir el patientId
-        int patientId = receiveDataViaNetwork.receiveInt();
+        int patientId = in.receiveInt();
 
-        // Paso 2: Recibir los datos a modificar
-        // Recibimos todos los posibles campos (nombre, apellido, teléfono, email, seguro)
-        String newName = receiveDataViaNetwork.receiveString();  // Nombre
-        String newSurname = receiveDataViaNetwork.receiveString();  // Apellido
-        int newPhone = receiveDataViaNetwork.receiveInt();  // Teléfono
-        String newEmail = receiveDataViaNetwork.receiveString();  // Email
-        int newInsurance = receiveDataViaNetwork.receiveInt();  // Seguro
+        String newName      = in.receiveString();
+        String newSurname   = in.receiveString();
+        int    newPhone     = in.receiveInt();
+        String newEmail     = in.receiveString();
+        String newdni = in.receiveString();
+        String newSex =in.receiveString();
+        int    newInsurance = in.receiveInt();
 
-        // Verificación de campos no vacíos para actualizarlos
+        JDBCPatientManager pm = new JDBCPatientManager(new ConnectionManager());
         boolean updated = false;
 
-        // Paso 3: Verificar y actualizar los datos que no son vacíos
-        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
-
-        // Actualizar nombre
         if (newName != null && !newName.isEmpty()) {
-            updatePatientName(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            pm.updatePatientName(patientId, newName);
             updated = true;
         }
 
-        // Actualizar apellido
         if (newSurname != null && !newSurname.isEmpty()) {
-            updatePatientSurname(socket,receiveDataViaNetwork,sendDataViaNetwork);
-           updated = true;
+            pm.updatePatientSurname(patientId, newSurname);
+            updated = true;
         }
 
-        // Actualizar teléfono
         if (newPhone != -1) {
-            updatePatientPhone(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            pm.updatePatientPhone(patientId, newPhone);
             updated = true;
         }
 
-        // Actualizar email
         if (newEmail != null && !newEmail.isEmpty()) {
-            updatePatientEmail(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            pm.updatePatientEmail(patientId, newEmail);
+            updated = true;
+        }
+        if (newdni != null && !newdni.isEmpty()) {
+            pm.updatePatientDNI(patientId, newdni);
+            updated = true;
+        }
+        if (newSex != null && !newSex.isEmpty()) {
+            pm.updatePatientSex(patientId, newSex);
             updated = true;
         }
 
-        // Actualizar seguro
         if (newInsurance != -1) {
-            updatePatientInsurance(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            pm.updatePatientInsurance(patientId, newInsurance);
             updated = true;
         }
 
-        // Si al menos un dato fue actualizado, confirmamos que la operación fue exitosa
         if (updated) {
-            sendDataViaNetwork.sendStrings("Patient data updated successfully.");
+            out.sendStrings("Patient data updated successfully.");
         } else {
-            sendDataViaNetwork.sendStrings("No data was updated.");
+            out.sendStrings("No data updated.");
         }
     }
+
 
 
 
