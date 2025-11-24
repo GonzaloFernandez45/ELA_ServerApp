@@ -342,6 +342,7 @@ public class Main {
                         break;
                     case 4:
                         System.out.println("SELECTED: Change patient data");
+                        updatePatientData(socket,recieveDataViaNetwork,sendDataViaNetwork);
                         break;
                     case 0:
                         System.out.println("0. Exit");
@@ -436,45 +437,46 @@ public class Main {
                                                SendDataViaNetwork sendDataViaNetwork,
                                                MedicalInformationManager medicalInformationManager) throws IOException {
 
-        // 1. Recibir el patientId del médico
+        // Paso 1: Recibir el patientId del médico
         int patientId = receiveDataViaNetwork.receiveInt();
 
-        // 2. Obtener todos los registros de medical_information para el paciente
+        // Paso 2: Obtener todos los registros de medical_information para el paciente
         List<MedicalInformation> medicalInfoList = medicalInformationManager.getMedicalInfoByPatientId(patientId);
 
-        // 3. Mostrar los registros disponibles al médico (esto puede ser en una lista o menú)
+        // Paso 3: Comprobar si hay registros médicos
         if (medicalInfoList.isEmpty()) {
+            // Enviar un mensaje al doctor indicando que no hay registros médicos
             sendDataViaNetwork.sendStrings("No medical records found for this patient.");
-            return;
+            return;  // Terminar la ejecución si no hay registros médicos
         }
 
-        // Enviar los registros disponibles al médico
+        // Paso 4: Enviar la lista de registros médicos al doctor
         StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
         for (int i = 0; i < medicalInfoList.size(); i++) {
             MedicalInformation m = medicalInfoList.get(i);
             records.append(i + 1).append(". Date: ").append(m.getReportDate()).append(" Feedback: ").append(m.getFeedback()).append("\n");
         }
-        sendDataViaNetwork.sendStrings(records.toString());
+        sendDataViaNetwork.sendStrings(records.toString());  // Enviar los registros al doctor
 
-        // 4. Recibir la selección del médico (el índice del registro)
+        // Paso 5: Recibir la selección del médico (el índice del registro)
         int selectedIndex = receiveDataViaNetwork.receiveInt();  // El médico selecciona el registro por índice
 
-        // Validar la selección
+        // Paso 6: Validar la selección del registro
         if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
             sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
             return;
         }
 
-        // Obtener el registro seleccionado
+        // Paso 7: Obtener el registro seleccionado
         MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);  // Ajustamos el índice para 0-based
 
-        // 5. Recibir el nuevo feedback del médico
+        // Paso 8: Recibir el nuevo feedback del médico
         String newFeedback = receiveDataViaNetwork.receiveString();
 
-        // 6. Actualizar el feedback del registro seleccionado
+        // Paso 9: Actualizar el feedback del registro seleccionado
         boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
 
-        // 7. Preparar el mensaje de respuesta
+        // Paso 10: Preparar el mensaje de respuesta
         String responseMessage;
         if (success) {
             responseMessage = "Feedback updated successfully for the selected record.";
@@ -482,9 +484,10 @@ public class Main {
             responseMessage = "Error updating feedback for the selected record.";
         }
 
-        // 8. Enviar la respuesta al médico
+        // Paso 11: Enviar la respuesta al médico
         sendDataViaNetwork.sendStrings(responseMessage);
     }
+
 
 
 
@@ -686,6 +689,66 @@ public class Main {
             sendDataViaNetwork.sendStrings("Error updating patient name.");
         }
     }
+    public static void updatePatientData(Socket socket,
+                                         ReceiveDataViaNetwork receiveDataViaNetwork,
+                                         SendDataViaNetwork sendDataViaNetwork) throws IOException {
+
+        // Paso 1: Recibir el patientId
+        int patientId = receiveDataViaNetwork.receiveInt();
+
+        // Paso 2: Recibir los datos a modificar
+        // Recibimos todos los posibles campos (nombre, apellido, teléfono, email, seguro)
+        String newName = receiveDataViaNetwork.receiveString();  // Nombre
+        String newSurname = receiveDataViaNetwork.receiveString();  // Apellido
+        int newPhone = receiveDataViaNetwork.receiveInt();  // Teléfono
+        String newEmail = receiveDataViaNetwork.receiveString();  // Email
+        int newInsurance = receiveDataViaNetwork.receiveInt();  // Seguro
+
+        // Verificación de campos no vacíos para actualizarlos
+        boolean updated = false;
+
+        // Paso 3: Verificar y actualizar los datos que no son vacíos
+        JDBCPatientManager patientManager = new JDBCPatientManager(new ConnectionManager());
+
+        // Actualizar nombre
+        if (newName != null && !newName.isEmpty()) {
+            updatePatientName(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            updated = true;
+        }
+
+        // Actualizar apellido
+        if (newSurname != null && !newSurname.isEmpty()) {
+            updatePatientSurname(socket,receiveDataViaNetwork,sendDataViaNetwork);
+           updated = true;
+        }
+
+        // Actualizar teléfono
+        if (newPhone != -1) {
+            updatePatientPhone(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            updated = true;
+        }
+
+        // Actualizar email
+        if (newEmail != null && !newEmail.isEmpty()) {
+            updatePatientEmail(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            updated = true;
+        }
+
+        // Actualizar seguro
+        if (newInsurance != -1) {
+            updatePatientInsurance(socket,receiveDataViaNetwork,sendDataViaNetwork);
+            updated = true;
+        }
+
+        // Si al menos un dato fue actualizado, confirmamos que la operación fue exitosa
+        if (updated) {
+            sendDataViaNetwork.sendStrings("Patient data updated successfully.");
+        } else {
+            sendDataViaNetwork.sendStrings("No data was updated.");
+        }
+    }
+
+
 
     private static void patientInsertMedicalInformartion(Patient patient, ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
         try{
