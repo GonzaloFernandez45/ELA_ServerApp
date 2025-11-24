@@ -84,6 +84,7 @@ public class ConnectionManager {
                     + "reportDate  TEXT NOT NULL,"
                     + "medication TEXT,"
                     + "feedback TEXT,"
+                    + "patient_id INTEGER,"
                     + "FOREIGN KEY (patient_id) REFERENCES patient(id))";
             createTables3.executeUpdate(create3);
             createTables3.close();

@@ -2,10 +2,13 @@ package interfaces;
 
 import pojos.MedicalInformation;
 
+import java.util.List;
+
 public interface MedicalInformationManager {
     public void insertMedicalInformation(MedicalInformation m);
     public void updateMedicalInformation(MedicalInformation m);
     public void deleteMedicalInformation(MedicalInformation m);
-    public MedicalInformation getMedicalInfoByPatientId(int id);
+    public List<MedicalInformation> getMedicalInfoByPatientId(int patientId);
+    public boolean updateFeedback(int medicalInfoId, String feedback);
 
 }

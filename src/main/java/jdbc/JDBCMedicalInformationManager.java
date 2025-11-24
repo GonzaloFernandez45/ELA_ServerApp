@@ -59,31 +59,53 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public MedicalInformation getMedicalInfoByPatientId(int patientId) {
-        MedicalInformation m = null;
+    public List<MedicalInformation> getMedicalInfoByPatientId(int patientId) {
+        List<MedicalInformation> medicalInfoList = new ArrayList<>();
 
-        try {
-            String sql = "SELECT * FROM medicalInformation WHERE patient_id = ?";
-            PreparedStatement ps = c.prepareStatement(sql);
+        String sql = "SELECT * FROM medical_information WHERE patient_id = ? ORDER BY reportDate DESC"; // Ordenamos por fecha
 
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                m = new MedicalInformation();
+            while (rs.next()) {
+                MedicalInformation m = new MedicalInformation();
                 m.setId(rs.getInt("id"));
                 m.setPatient_id(rs.getInt("patient_id"));
                 m.setFeedback(rs.getString("feedback"));
+                m.setReportDate(rs.getDate("reportDate"));
+                // Asumiendo que tienes otros atributos como symptoms y medication, agrégales aquí
+
+                medicalInfoList.add(m);
             }
 
             rs.close();
-            ps.close();
 
         } catch (SQLException e) {
             System.out.println("Error retrieving medical information for patient " + patientId);
             e.printStackTrace();
         }
 
-        return m;
+        return medicalInfoList;
     }
+    @Override
+
+    public boolean updateFeedback(int medicalInfoId, String feedback) {
+        String sql = "UPDATE medical_information SET feedback = ? WHERE id = ?";
+
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, feedback);
+            ps.setInt(2, medicalInfoId);  // Usamos el id de medical_information para actualizar un único registro
+
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0; // Si se actualizó al menos un registro, es éxito
+
+        } catch (SQLException e) {
+            System.out.println("Error updating feedback for medical information ID " + medicalInfoId);
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

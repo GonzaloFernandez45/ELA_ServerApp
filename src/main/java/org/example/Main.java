@@ -331,7 +331,8 @@ public class Main {
                         viewPatient(socket, recieveDataViaNetwork,sendDataViaNetwork);
                         break;
                     case 2:
-                        System.out.println("SELECTED: Add feedback");
+                        System.out.println("SELECTED: Update/ add feedback");
+                        selectAndUpdateFeedback(socket,recieveDataViaNetwork,sendDataViaNetwork,medicalInformationManager);
                         break;
                     case 3:
                         System.out.println("SELECTED: View recorded signal");
@@ -400,21 +401,61 @@ public class Main {
         }
 
     }
+    public static void selectAndUpdateFeedback(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, MedicalInformationManager medicalInformationManager) throws IOException {
+
+        // 1. Recibir el patientId del médico
+        int patientId = receiveDataViaNetwork.receiveInt();
+
+        // 2. Obtener todos los registros de medical_information para el paciente
+        List<MedicalInformation> medicalInfoList = medicalInformationManager.getMedicalInfoByPatientId(patientId);
+
+        // 3. Mostrar los registros disponibles al médico (esto puede ser en una lista o menú)
+        if (medicalInfoList.isEmpty()) {
+            sendDataViaNetwork.sendStrings("No medical records found for this patient.");
+            return;
+        }
+
+        // Enviar los registros disponibles al médico
+        StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
+        for (int i = 0; i < medicalInfoList.size(); i++) {
+            MedicalInformation m = medicalInfoList.get(i);
+            records.append(i + 1).append(". Date: ").append(m.getReportDate()).append(" Feedback: ").append(m.getFeedback()).append("\n");
+        }
+        sendDataViaNetwork.sendStrings(records.toString());
+
+        // 4. Recibir la selección del médico (el índice del registro)
+        int selectedIndex = receiveDataViaNetwork.receiveInt();  // El médico selecciona el registro por índice
+
+        // Validar la selección
+        if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
+            sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
+            return;
+        }
+
+        // Obtener el registro seleccionado
+        MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);  // Ajustamos el índice para 0-based
+
+        // 5. Recibir el nuevo feedback del médico
+        String newFeedback = receiveDataViaNetwork.receiveString();
+
+        // 6. Actualizar el feedback del registro seleccionado
+        boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
+
+        // 7. Preparar el mensaje de respuesta
+        String responseMessage;
+        if (success) {
+            responseMessage = "Feedback updated successfully for the selected record.";
+        } else {
+            responseMessage = "Error updating feedback for the selected record.";
+        }
+
+        // 8. Enviar la respuesta al médico
+        sendDataViaNetwork.sendStrings(responseMessage);
+    }
 
 
-//    public static void addFeedback (Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork,MedicalInformationManager medicalInformationManager, SymptomManager symptomManager ) throws IOException {
-//        int patient_id = receiveDataViaNetwork.receiveInt();
-//        String feedback = receiveDataViaNetwork.receiveString();  // Recibir el feedback
-//        ConnectionManager conMan = new ConnectionManager();
-//        JDBCPatientManager patientManager= new JDBCPatientManager(conMan);
-//        MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformation()
-//        // Procesar el feedback (en este caso, guardarlo en la base de datos)
-//        String responseMessage = medi.addFeedback(patient_id,feedback);// Procesar y guardar el feedback
-//
-//        // Enviar respuesta al doctor
-//        sendDataViaNetwork.sendStrings(responseMessage);
-//
-//    }
+
+
     public static void updatePatientName(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
 
         String newName = receiveDataViaNetwork.receiveString();
