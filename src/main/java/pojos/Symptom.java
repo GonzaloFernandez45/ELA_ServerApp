@@ -16,7 +16,7 @@ public class Symptom {
         this.medicalInformations = new ArrayList<MedicalInformation>();
     }
 
-    public Symptom(Integer id, String description) {
+    public Symptom(int id, String description) {
         this.id = id;
         this.description = description;
         this.medicalInformations = new ArrayList<MedicalInformation>();

@@ -758,6 +758,11 @@ public class Main {
 
                 //lega hasta aqui
                 List<Symptom> listSymptoms = symptomManager.listSymptoms();
+                System.out.println("Sending symptoms: " + listSymptoms);
+                System.out.println("Sending symptoms to client, number of symptoms: " + listSymptoms.size());
+                for (Symptom symptom : listSymptoms) {
+                    System.out.println("Symptom ID: " + symptom.getId() + ", Description: " + symptom.getDescription());
+                }
                 sendDataViaNetwork.sendSymptoms(listSymptoms);
 
                 System.out.println("Medical information in process");
