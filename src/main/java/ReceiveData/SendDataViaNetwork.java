@@ -98,6 +98,26 @@ public class SendDataViaNetwork {
         dataOutputStream.flush();
     }
 
+    public void sendMedicalInformationList(List<MedicalInformation> medicalInformation) throws IOException {
+        dataOutputStream.writeInt(medicalInformation.size());
+        for (MedicalInformation mi : medicalInformation) {
+            dataOutputStream.writeInt(mi.getId());
+            dataOutputStream.writeUTF(mi.getReportDate().toString());
+            dataOutputStream.writeInt(mi.getMedication().size());
+            for (String med : mi.getMedication()){
+                dataOutputStream.writeUTF(med);
+            }
+            dataOutputStream.writeInt(mi.getSymptoms().size());
+            for (Symptom s : mi.getSymptoms()) {
+                dataOutputStream.writeInt(s.getId());
+                dataOutputStream.writeUTF(s.getDescription());
+            }
+            dataOutputStream.writeUTF(mi.getFeedback());
+        }
+        // Asegurarse de que los datos se escriban completamente
+        dataOutputStream.flush();
+    }
+
     public void sendSymptoms(List<Symptom> symptoms) throws IOException {
         // 1. Enviar cuántos síntomas vienen
         dataOutputStream.writeInt(symptoms.size());

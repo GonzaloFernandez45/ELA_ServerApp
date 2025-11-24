@@ -1,6 +1,6 @@
 package pojos;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,34 +33,45 @@ public class MedicalInformation {
     public Integer getId() {
         return id;
     }
+
     public void setId(Integer id) {
         this.id = id;
     }
-    public List<Symptom> getSymptoms() {
-        return symptoms;
+
+    public int getPatient_id() {
+        return patient_id;
     }
-    public void setSymptoms(List<Symptom> symptoms) {
-        this.symptoms = symptoms;
+
+    public String getFeedback() {
+        return feedback;
     }
+
+    public void setFeedback(String feedback) {
+        this.feedback = feedback;
+    }
+
+    public List<String> getMedication() {
+        return medication;
+    }
+
+    public void setMedication(List<String> medication) {
+        this.medication = medication;
+    }
+
     public Date getReportDate() {
         return reportDate;
     }
 
-    public void setReportDate(java.sql.Date reportDate) {
+    public void setReportDate(Date reportDate) {
         this.reportDate = reportDate;
+    }
 
+    public List<Symptom> getSymptoms() {
+        return symptoms;
     }
-    public List<String> getMedication() {
-        return medication;
-    }
-    public void setMedication(List<String> medication) {
-        this.medication = medication;
-    }
-    public String getFeedback() {return feedback;}
-    public void setFeedback(String feedback) {this.feedback = feedback;}
 
-    public int getPatient_id() {
-        return patient_id;
+    public void setSymptoms(List<Symptom> symptoms) {
+        this.symptoms = symptoms;
     }
 
     public void setPatient_id(int patient_id) {
@@ -80,13 +91,16 @@ public class MedicalInformation {
     }
 
     @Override
+
+    @Override
     public String toString() {
         return "MedicalInformation{" +
                 "id=" + id +
                 ", symptoms=" + symptoms +
                 ", reportDate=" + reportDate +
                 ", medication=" + medication +
-                ", feedback='" + feedback +
+                ", feedback='" + feedback + '\'' +
+                ", patient_id=" + patient_id +
                 '}';
     }
 }

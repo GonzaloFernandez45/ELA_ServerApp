@@ -2,11 +2,8 @@ package jdbc;
 
 import interfaces.MedicalInformationManager;
 import pojos.MedicalInformation;
-import pojos.Patient;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
@@ -22,12 +19,16 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     @Override
     public void insertMedicalInformation(MedicalInformation m) {
         try{
-            String template = "INSERT INTO medicalInformation (symptoms, reportDate, medication) VALUES (?, ?, ?)";
+            String template = "INSERT INTO medicalInformation (reportDate, medication, feedback) VALUES (?, ?, ?)";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(template);
-            pstmt.setString(1, String.valueOf(m.getSymptoms()));
-            pstmt.setString(2, String.valueOf(m.getReportDate()));
-            pstmt.setString(3, String.valueOf(m.getMedication()));
+            pstmt.setDate(1, m.getReportDate());
+
+            List<String> meds = m.getMedication();
+            String medsAsString = String.join(",", meds);
+            pstmt.setString(2, medsAsString);
+
+            pstmt.setString(3, m.getFeedback());
             pstmt.executeUpdate();
             pstmt.close();
         }catch (SQLException e) {
@@ -37,13 +38,13 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     }
 
     @Override
-    public void updateMedicalInformation(MedicalInformation m) {
+    public void updateMedicalInformation(int patient_id, String feedback) {
         try {
-            String sql = "UPDATE medicalInformation SET feedback = ? WHERE id = ?";
+            String sql = "UPDATE medicalInformation SET feedback = ? WHERE patient_id = ?";
             PreparedStatement pstmt = c.prepareStatement(sql);
 
-            pstmt.setString(1, m.getFeedback());  // Asumimos que el feedback ahora está presente
-            pstmt.setInt(2, m.getId());  // Usamos el ID de la información médica para actualizar el registro específico
+            pstmt.setString(1, feedback);  // Asumimos que el feedback ahora está presente
+            pstmt.setInt(2, patient_id);  //
 
             pstmt.executeUpdate();
             pstmt.close();
@@ -60,52 +61,44 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
     @Override
     public List<MedicalInformation> getMedicalInfoByPatientId(int patientId) {
-        List<MedicalInformation> medicalInfoList = new ArrayList<>();
+        List<MedicalInformation> medicalInformationList = null;
 
-        String sql = "SELECT * FROM medical_information WHERE patient_id = ? ORDER BY reportDate DESC"; // Ordenamos por fecha
+        try {
+            String sql = "SELECT * FROM medicalInformation WHERE patient_id = ?";
+            PreparedStatement ps = c.prepareStatement(sql);
 
-        try (PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
+            while(rs.next()) {
                 MedicalInformation m = new MedicalInformation();
+                //EL ID
                 m.setId(rs.getInt("id"));
-                m.setPatient_id(rs.getInt("patient_id"));
+                //El date, se guarda en milisegundos en la db
+                String reportDateString = rs.getString("reportDate");
+                long millis = Long.parseLong(reportDateString);
+                Date reportDate = new Date(millis);
+                m.setReportDate(reportDate);
+                //Para sacar una lista a partir de un string con delimitadores
+                String medsString = rs.getString("medication");
+                List<String> medication = (medsString == null || medsString.isEmpty())
+                        ? List.of()
+                        : List.of(medsString.split(","));
+                m.setMedication(medication);
+                //set el feedback
                 m.setFeedback(rs.getString("feedback"));
-                m.setReportDate(rs.getDate("reportDate"));
-                // Asumiendo que tienes otros atributos como symptoms y medication, agrégales aquí
-
-                medicalInfoList.add(m);
+                //lo vamos añadiendo a una lista de medical infos
+                medicalInformationList.add(m);
             }
 
             rs.close();
+            ps.close();
 
         } catch (SQLException e) {
             System.out.println("Error retrieving medical information for patient " + patientId);
             e.printStackTrace();
         }
 
-        return medicalInfoList;
+        return medicalInformationList;
     }
-    @Override
-
-    public boolean updateFeedback(int medicalInfoId, String feedback) {
-        String sql = "UPDATE medical_information SET feedback = ? WHERE id = ?";
-
-        try (PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, feedback);
-            ps.setInt(2, medicalInfoId);  // Usamos el id de medical_information para actualizar un único registro
-
-            int rowsUpdated = ps.executeUpdate();
-            return rowsUpdated > 0; // Si se actualizó al menos un registro, es éxito
-
-        } catch (SQLException e) {
-            System.out.println("Error updating feedback for medical information ID " + medicalInfoId);
-            e.printStackTrace();
-            return false;
-        }
-    }
-
 
 }
