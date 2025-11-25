@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDBCDoctorManager implements DoctorManager {
-    private static Connection c;
+    private Connection c;
     private ConnectionManager conMan;
     public JDBCDoctorManager(ConnectionManager conMan) {
         this.conMan = conMan;
@@ -65,7 +65,7 @@ public class JDBCDoctorManager implements DoctorManager {
         ResultSet rs = null;
         Integer id = null;
         try {
-            s = conMan.getConnection().prepareStatement(query);
+            s = c.prepareStatement(query);
             s.setString(1, email);
             rs = s.executeQuery();
             if (rs.next()) { // Move the cursor to the first row

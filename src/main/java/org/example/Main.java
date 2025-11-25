@@ -27,7 +27,6 @@ public class Main {
 
 
         public static void main(String[] args) throws IOException {
-            ConnectionManager manager = new ConnectionManager();
             ServerSocket serverSocket = new ServerSocket(8000);
             ConnectionManager conMan = new ConnectionManager();
             JDBCPatientManager patientManager = new JDBCPatientManager(conMan);
@@ -124,7 +123,7 @@ public class Main {
                     patientManager.addPatient(patient); //Primero añadir al paciente a la DB
 
                     int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail()); //Obtener su ID
-
+                    System.out.println("Patient ID from email = " + patient_id);
                     user.setPatient_id(patient_id); //Asignar la Foreign Key al usuario
                     userManager.addUser(user); //Añadir el usuario a la DB
 

@@ -117,6 +117,8 @@ public class ConnectionManager {
                     + "email TEXT NOT NULL UNIQUE,"
                     + "password TEXT NOT NULL,"
                     + "role TEXT NOT NULL,"
+                    + "patient_id INTEGER,"
+                    + "doctor_id INTEGER,"
                     + "FOREIGN KEY (patient_id) REFERENCES patient(id)),"
                     + "FOREIGN KEY (doctor_id) REFERENCES doctor(id))";
             createTables6.executeUpdate(create6);
