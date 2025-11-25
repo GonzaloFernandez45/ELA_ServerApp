@@ -24,7 +24,7 @@ public class JDBCSymptomManager implements SymptomManager {
 
     @Override
     public List<Symptom> listSymptoms(){
-        List<Symptom> symptoms = null;
+        List<Symptom> symptoms = new ArrayList<>();
         try {
             String sql = "SELECT * FROM symptom";
             PreparedStatement pstmt = c.prepareStatement(sql);
