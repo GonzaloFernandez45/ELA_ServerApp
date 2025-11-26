@@ -27,7 +27,7 @@ public class Main {
 
 
         public static void main(String[] args) throws IOException {
-            ServerSocket serverSocket = new ServerSocket(8000);
+            ServerSocket serverSocket = new ServerSocket(8888);
             ConnectionManager conMan = new ConnectionManager();
             JDBCPatientManager patientManager = new JDBCPatientManager(conMan);
             JDBCUserManager userManager = new JDBCUserManager(conMan);
