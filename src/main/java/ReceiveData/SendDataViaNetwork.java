@@ -70,33 +70,8 @@ public class SendDataViaNetwork {
         dataOutputStream.flush();
 
     }
-    public void sendMedicalInformation(MedicalInformation medicalInformation) throws IOException {
-        // Enviar el ID de la información médica
-        dataOutputStream.writeInt(medicalInformation.getId());
 
-        // Enviar la fecha del informe
-        dataOutputStream.writeUTF(String.valueOf(medicalInformation.getReportDate()));
 
-        // Enviar la lista de síntomas
-        List<Symptom> symptoms = medicalInformation.getSymptoms();
-        dataOutputStream.writeInt(symptoms.size());  // Enviar la cantidad de síntomas
-        for (Symptom symptom : symptoms) {
-            dataOutputStream.writeInt(symptom.getId());  // Enviar el ID del síntoma
-        }
-
-        // Enviar la lista de medicamentos
-        List<String> medication = medicalInformation.getMedication();
-        dataOutputStream.writeInt(medication.size());  // Enviar la cantidad de medicamentos
-        for (String med : medication) {
-            dataOutputStream.writeUTF(med);  // Enviar cada medicamento
-        }
-
-        // Enviar el feedback
-        dataOutputStream.writeUTF(medicalInformation.getFeedback());
-
-        // Asegurarse de que los datos se escriban completamente
-        dataOutputStream.flush();
-    }
 
     public void sendMedicalInformationList(List<MedicalInformation> medicalInformation) throws IOException {
         dataOutputStream.writeInt(medicalInformation.size());
@@ -115,6 +90,23 @@ public class SendDataViaNetwork {
             dataOutputStream.writeUTF(mi.getFeedback());
         }
         // Asegurarse de que los datos se escriban completamente
+        dataOutputStream.flush();
+    }
+
+
+
+    public void sendMedicalInformation(MedicalInformation medicalInformation) throws IOException {
+
+        dataOutputStream.writeUTF(String.valueOf(medicalInformation.getReportDate()));
+        // Enviar la lista de síntomas
+        sendSymptoms(medicalInformation.getSymptoms());
+
+        // Enviar la lista de medicamentos
+        sendMedications(medicalInformation.getMedication());
+
+        // Enviar el feedback
+        dataOutputStream.writeUTF(medicalInformation.getFeedback());
+
         dataOutputStream.flush();
     }
 
@@ -141,6 +133,20 @@ public class SendDataViaNetwork {
             System.err.println("Error with resources: " + ex.getMessage());
             Logger.getLogger(SendDataViaNetwork.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+
+    public void sendMedications(List<String> medications) throws IOException {
+        // 1. Enviar cuántos síntomas vienen
+        dataOutputStream.writeInt(medications.size());
+
+        // 2. Enviar cada síntoma (ajusta los campos a lo que tenga tu clase Symptom)
+        for (String medication : medications) {
+            dataOutputStream.writeUTF(medication);
+            // si tu Symptom tiene más cosas, las vas escribiendo aquí en el mismo orden
+        }
+
+        dataOutputStream.flush();
     }
 
 

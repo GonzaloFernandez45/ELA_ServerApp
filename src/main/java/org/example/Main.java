@@ -161,6 +161,7 @@ public class Main {
                         break;
                     case 4:
                          System.out.println("4. See doctor´s feedback");
+                         patientSeeDoctorFeedback(patient, recieveDataViaNetwork, sendDataViaNetwork, socket, patientManager, symptomManager, medicalInformationManager);
                          break;
                     case 0:
                         System.out.println("0. Exit");
@@ -175,6 +176,8 @@ public class Main {
             releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
         }
     }
+
+
 
     private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
             try{
@@ -588,11 +591,22 @@ public class Main {
                 sendDataViaNetwork.sendSymptoms(listSymptoms);
 
                 System.out.println("Medical information in process");
+
                 MedicalInformation medicalInformation = recieveDataViaNetwork.receiveMedicalInformation();
-                System.out.println(medicalInformation.toString());
+                medicalInformation.setPatient_id(patient.getId());
+                System.out.println(medicalInformation);
                 if(medicalInformation != null){
                     sendDataViaNetwork.sendStrings("RECEIVED MEDICAL INFORMATION");
                     medicalInformationManager.insertMedicalInformation(medicalInformation); //añadimos medical info a la DB
+
+                    //insertar en symptom_medicalinfromation
+                        int medicalInfoId = medicalInformationManager.getMedicalInformationByDate(medicalInformation.getReportDate(), medicalInformation.getPatient_id()).getId();
+                        List<Symptom> symptoms = medicalInformation.getSymptoms();
+
+                        for(Symptom symptom : symptoms){
+                            medicalInformationManager.insertSymptomMedicalInformation(medicalInfoId, symptom );
+                        }
+
                     menuPaciente(patient, sendDataViaNetwork,recieveDataViaNetwork , socket, patientManager, symptomManager, medicalInformationManager);
                 }else{
                     sendDataViaNetwork.sendStrings("ERROR");
@@ -603,10 +617,54 @@ public class Main {
         }catch (Exception e) {
             e.printStackTrace();
             System.out.println("Error or client disconnected");
-            // releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
         }
 
+
+
     }
+
+    private static void patientSeeDoctorFeedback(Patient patient, ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) {
+
+        try{
+            String message = recieveDataViaNetwork.receiveString();
+
+            if(message.equals("REQUEST FEEDBACK")){
+                System.out.println("Received request feedback, sending feedback");
+                sendDataViaNetwork.sendStrings("OK");
+
+                //buscar por fecha el medical report
+                String dateString = recieveDataViaNetwork.receiveString();
+                Date date = Date.valueOf(dateString);
+
+                MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformationByDate(date, patient.getId());
+                //need to set symptoms and medication
+                /*
+                   List<Symptom> symptomsOfMedicalInformation = medicalInformation.getSymptomsOfMedicalInformation(medicalInformation.getId());
+                   medicalInformation.setSymptoms(symptomsOfMedicalInformation);
+                 */
+
+                sendDataViaNetwork.sendMedicalInformation(medicalInformation);
+
+                String response = recieveDataViaNetwork.receiveString();
+                if(response.equals("RECEIVED MEDICAL INFORMATION")){
+                    menuPaciente(patient, sendDataViaNetwork,recieveDataViaNetwork , socket, patientManager, symptomManager, medicalInformationManager);
+                }
+
+            }else{
+                sendDataViaNetwork.sendStrings("ERROR");
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error or client disconnected");
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+        }
+
+
+    }
+
+
+
 
 }
 

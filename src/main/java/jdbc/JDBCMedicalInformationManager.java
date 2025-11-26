@@ -2,6 +2,8 @@ package jdbc;
 
 import interfaces.MedicalInformationManager;
 import pojos.MedicalInformation;
+import pojos.Patient;
+import pojos.Symptom;
 
 import java.sql.*;
 import java.util.List;
@@ -19,7 +21,7 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
     @Override
     public void insertMedicalInformation(MedicalInformation m) {
         try{
-            String template = "INSERT INTO medicalInformation (reportDate, medication, feedback) VALUES (?, ?, ?)";
+            String template = "INSERT INTO medical_information (reportDate, medication, feedback, patient_id) VALUES (?, ?, ?, ?)";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(template);
             pstmt.setDate(1, m.getReportDate());
@@ -29,6 +31,7 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
             pstmt.setString(2, medsAsString);
 
             pstmt.setString(3, m.getFeedback());
+            pstmt.setInt(4, m.getPatient_id());
             pstmt.executeUpdate();
             pstmt.close();
         }catch (SQLException e) {
@@ -114,6 +117,66 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
             System.out.println("Error updating feedback for medical information ID " + medicalInfoId);
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public MedicalInformation getMedicalInformationByDate(Date date, int patient_id){
+        String query = "SELECT * FROM medical_information WHERE reportDate = ? AND patient_id = ?;";
+        MedicalInformation medicalInformation = new MedicalInformation();
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            stmt = c.prepareStatement(query);
+            stmt.setDate(1, date);
+            stmt.setInt(2, patient_id);
+
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int reportId = rs.getInt("id");
+                medicalInformation.setId(reportId);
+                String dateString = rs.getString("reportDate");
+                long millis = Long.parseLong(dateString);
+                Date reportDate = new Date(millis);
+                medicalInformation.setReportDate(reportDate);
+                String feedback = rs.getString("feedback");
+                medicalInformation.setFeedback(feedback);
+                int patientId = rs.getInt("patient_id");
+                medicalInformation.setPatient_id(patientId);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return medicalInformation;
+    }
+
+    public void insertSymptomMedicalInformation(int medicalInformationId, Symptom symptom){
+        try{
+            String template = "INSERT INTO symptom_medicalInformation (symptom_id, medical_information_id) VALUES (?, ?)";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(template);
+            pstmt.setInt(1, symptom.getId());
+            pstmt.setInt(2, medicalInformationId);
+
+            pstmt.executeUpdate();
+            pstmt.close();
+        }catch (SQLException e) {
+            System.out.println("Error in the database");
+            e.printStackTrace();
         }
     }
 

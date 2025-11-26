@@ -115,53 +115,53 @@ public class ReceiveDataViaNetwork {
     }
 
 
+    //Obtiene los sintomas desde el servidor, se solicita la informacion.
+    public List<Symptom> receiveSymptoms() throws IOException {
+        // 1. Leer cuántos síntomas vienen
+        int size = dataInputStream.readInt();
 
-    //Obtiene el sintoma desde el servidor, se solicita la informacion.
-    public Symptom getSymptomFromServer(int symptomId) {
-        try {
-            // Enviar el ID como entero binario
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeInt(symptomId);
-            out.flush();
+        List<Symptom> symptoms = new ArrayList<Symptom>();
 
-            // Recibir el objeto Symptom desde el servidor
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            int symptomIdFromServer = in.readInt();
-            String symptomName = in.readUTF();  // Suponiendo que el nombre es un String
-            // Aquí deberías recuperar el resto de los atributos del Symptom. Ajusta según tus necesidades
-            Symptom symptom = new Symptom(symptomIdFromServer, symptomName);
-            return symptom;
-        } catch (IOException e) {
-            System.err.println("Error fetching symptom from server: " + e.getMessage());
-            e.printStackTrace();
+        // 2. Leer cada síntoma en el mismo orden en el que se envió
+        for (int i = 0; i < size; i++) {
+            int id = dataInputStream.readInt();
+            String description = dataInputStream.readUTF();
+
+            // Ajusta esto al constructor/setters que tengas en tu clase Symptom
+            Symptom symptom = new Symptom(id,description);
+            symptoms.add(symptom);
         }
-        return null;
+
+        return symptoms;
+    }
+
+    //Obtiene los sintomas desde el servidor, se solicita la informacion.
+    public List<String> receiveMedications() throws IOException {
+        // 1. Leer cuántos síntomas vienen
+        int size = dataInputStream.readInt();
+
+        List<String> medications = new ArrayList<String>();
+
+        // 2. Leer cada síntoma en el mismo orden en el que se envió
+        for (int i = 0; i < size; i++) {
+            String medication = dataInputStream.readUTF();
+            medications.add(medication);
+        }
+
+        return medications;
     }
 
     public MedicalInformation receiveMedicalInformation() {
         MedicalInformation medicalInformation = null;
         try {
             Date reportDate = Date.valueOf(dataInputStream.readUTF());  // Recibe la fecha del informe
-            int symptomsCount = dataInputStream.readInt();  // Número de síntomas
-            List<Symptom> symptoms = new ArrayList<>();
-            for (int i = 0; i < symptomsCount; i++) {
-                int symptomId = dataInputStream.readInt();  // ID del síntoma
-                // Solicitar el síntoma al servidor
-                Symptom symptom = getSymptomFromServer(symptomId);  // Obtener el síntoma desde el servidor
-                if (symptom != null) {
-                    symptoms.add(symptom);
-                }
-            }
 
-            // Recibe la lista de medicamentos
-            int medicationCount = dataInputStream.readInt();
-            List<String> medication = new ArrayList<>();
-            for (int i = 0; i < medicationCount; i++) {
-                medication.add(dataInputStream.readUTF());  // Agrega cada medicamento a la lista
-            }
+            List<Symptom> symptoms = receiveSymptoms();
+
+            List<String> medication = receiveMedications();
 
             // Crea la instancia de MedicalInformation con todos los datos
-            medicalInformation = new MedicalInformation( symptoms, reportDate, medication);
+            medicalInformation = new MedicalInformation(symptoms, reportDate, medication);
 
         } catch (IOException ex) {
             System.err.println("Error receiving medical information: " + ex.getMessage());
