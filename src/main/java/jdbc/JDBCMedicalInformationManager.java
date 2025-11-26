@@ -6,6 +6,7 @@ import pojos.Patient;
 import pojos.Symptom;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
@@ -64,32 +65,40 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
     @Override
     public List<MedicalInformation> getMedicalInfoByPatientId(int patientId) {
-        List<MedicalInformation> medicalInformationList = null;
+        List<MedicalInformation> medicalInformationList = new ArrayList<>();
+        JDBCSymptomManager symptomManager = new JDBCSymptomManager(conMan);  // Instanciamos JDBCSymptomManager
+
 
         try {
-            String sql = "SELECT * FROM medicalInformation WHERE patient_id = ?";
+            // Primer paso: Recuperar la información médica
+            String sql = "SELECT * FROM medical_information WHERE patient_id = ?";
             PreparedStatement ps = c.prepareStatement(sql);
-
             ps.setInt(1, patientId);
             ResultSet rs = ps.executeQuery();
-            while(rs.next()) {
+
+            while (rs.next()) {
                 MedicalInformation m = new MedicalInformation();
-                //EL ID
                 m.setId(rs.getInt("id"));
-                //El date, se guarda en milisegundos en la db
                 String reportDateString = rs.getString("reportDate");
                 long millis = Long.parseLong(reportDateString);
                 Date reportDate = new Date(millis);
                 m.setReportDate(reportDate);
-                //Para sacar una lista a partir de un string con delimitadores
+
+                // Recuperar la lista de medicamentos
                 String medsString = rs.getString("medication");
                 List<String> medication = (medsString == null || medsString.isEmpty())
                         ? List.of()
                         : List.of(medsString.split(","));
                 m.setMedication(medication);
-                //set el feedback
+
+                // Recuperar el feedback
                 m.setFeedback(rs.getString("feedback"));
-                //lo vamos añadiendo a una lista de medical infos
+
+                // Segundo paso: Recuperar los síntomas asociados a la información médica
+                List<Symptom> symptoms = symptomManager.getSymptomsForMedicalInfo(m.getId());  // Aquí usamos el método para obtener los síntomas
+                m.setSymptoms(symptoms);  // Establecer la lista de síntomas en la información médica
+
+                // Añadir la entrada de información médica a la lista
                 medicalInformationList.add(m);
             }
 
@@ -103,6 +112,8 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 
         return medicalInformationList;
     }
+
+
     public boolean updateFeedback(int medicalInfoId, String feedback) {
         String sql = "UPDATE medical_information SET feedback = ? WHERE id = ?";
 
@@ -180,5 +191,41 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
         }
     }
 
+//    @Override
+//    public List<MedicalInformation> getMedicalInformationByPatientId(int patientId) {
+//        List<MedicalInformation> medicalInfos = new ArrayList<>();
+//        String query = "SELECT * FROM medical_information WHERE patient_id = ?";
+//        PreparedStatement s = null;
+//        ResultSet rs = null;
+//
+//        try {
+//            s = c.prepareStatement(query);
+//            s.setInt(1, patientId);
+//            rs = s.executeQuery();
+//
+//            while (rs.next()) {
+//                // Aquí debes asegurarte de obtener los campos correctos y crear el objeto MedicalInformation
+//                MedicalInformation medicalInfo = new MedicalInformation();
+//                medicalInfo.setId(rs.getInt("id"));
+//                medicalInfo.setReportDate(rs.getDate("report_date"));
+//                //medicalInfo.setSymptoms(rs.getString("symptoms"));
+//                //medicalInfo.setMedication(rs.getString("medication"));
+//                medicalInfo.setFeedback(rs.getString("feedback"));
+//
+//                medicalInfos.add(medicalInfo);
+//            }
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        } finally {
+//            try {
+//                if (rs != null) rs.close();
+//                if (s != null) s.close();
+//            } catch (SQLException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        return medicalInfos;
+//    }
 
 }

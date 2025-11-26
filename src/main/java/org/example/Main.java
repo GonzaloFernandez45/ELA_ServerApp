@@ -332,6 +332,7 @@ public class Main {
                         System.out.println("SELECTED: View patient details");
                         viewPatient(socket, recieveDataViaNetwork,sendDataViaNetwork);
                         //viewPatientMedInfo(socket, recieveDataViaNetwork,sendDataViaNetwork);
+                        doctorViewMedicalInformation(socket,recieveDataViaNetwork,sendDataViaNetwork,doctorManager,patientManager,medicalInformationManager);
                         break;
                     case 2:
                         System.out.println("SELECTED: Add feedback");
@@ -515,10 +516,7 @@ public class Main {
     }
 
 
-    public static void updatePatientData(Socket socket,
-                                         ReceiveDataViaNetwork in,
-                                         SendDataViaNetwork out) throws IOException {
-
+    public static void updatePatientData(Socket socket,  ReceiveDataViaNetwork in,  SendDataViaNetwork out) throws IOException {
         int patientId = in.receiveInt();
 
         String newName      = in.receiveString();
@@ -622,6 +620,42 @@ public class Main {
 
 
 
+    }
+
+    private static void doctorViewMedicalInformation(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, DoctorManager doctorManager, PatientManager patientManager, MedicalInformationManager medicalInformationManager) throws IOException {
+        try {
+            String patientEmail = receiveDataViaNetwork.receiveString();  // Get the email of the patient
+
+            // Find the patient by email (using your PatientManager)
+            int patientid = patientManager.getPatientIDFromEmail(patientEmail);
+            if (patientid == -1) {
+                sendDataViaNetwork.sendStrings("ERROR: Patient not found");
+                return;
+            }
+            //Patient patient = patientManager.getPatientbyId(patientid);
+
+            // Retrieve all medical information for the patient
+            List<MedicalInformation> medicalInfos = medicalInformationManager.getMedicalInfoByPatientId(patientid);
+
+            if (medicalInfos == null || medicalInfos.isEmpty()) {
+                sendDataViaNetwork.sendStrings("ERROR: No medical information found");
+                return;
+            }
+
+            // Send the size of the list to the doctor
+            sendDataViaNetwork.sendInt(medicalInfos.size());
+
+            System.out.println("Sending medical information to doctor...");
+
+            // Send each medical information object to the doctor
+            for (MedicalInformation info : medicalInfos) {
+                sendDataViaNetwork.sendMedicalInformation(info);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendDataViaNetwork.sendStrings("ERROR: Could not fetch medical information");
+        }
     }
 
     private static void patientSeeDoctorFeedback(Patient patient, ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) {

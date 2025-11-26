@@ -111,6 +111,52 @@ public class JDBCPatientManager implements PatientManager {
     }
 
 
+    public Patient getPatientById(int id) {
+        Patient patient = null;
+        String query = "SELECT * FROM patient WHERE id = ?";
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Patient pat = null;
+
+        try {
+            ps = c.prepareStatement(query);
+            ps.setInt(1, id);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                int patientId = rs.getInt("id");
+                String name = rs.getString("name");
+                String surname = rs.getString("surname");
+                String dni = rs.getString("dni");
+                String dobString = rs.getString("dob");
+                long millis = Long.parseLong(dobString);
+                Date dob = new Date(millis);
+                String sex = rs.getString("sex");
+                int phone = rs.getInt("phone");
+                String email = rs.getString("email");
+                int insurance = rs.getInt("insurance");
+
+                pat = new Patient(name,surname,dni,dob,sex,phone,email,insurance);
+
+                // Recuperar la lista de información médica asociada
+                JDBCMedicalInformationManager jdbcMedicalInformationManager = new JDBCMedicalInformationManager(conMan);
+                List<MedicalInformation> medicalInfos = jdbcMedicalInformationManager.getMedicalInfoByPatientId(patient.getId());
+                pat.setMedicalInformation(medicalInfos);  // Asignar la lista de información médica al paciente
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return pat;
+    }
+
+
     @Override
     public void updatePatient(Patient p) {//la opcion del doctor de "modify patient data"
         try{

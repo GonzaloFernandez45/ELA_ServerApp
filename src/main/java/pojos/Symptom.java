@@ -16,6 +16,9 @@ public class Symptom {
         this.medicalInformations = new ArrayList<MedicalInformation>();
     }
 
+    public Symptom() {
+    }
+
     public Symptom(int id, String description) {
         this.id = id;
         this.description = description;

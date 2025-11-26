@@ -14,5 +14,7 @@ public interface MedicalInformationManager {
     public boolean updateFeedback(int medicalInfoId, String feedback);
     public MedicalInformation getMedicalInformationByDate(Date date, int patient_id);
     public void insertSymptomMedicalInformation(int medicalInformationId, Symptom symptom);
+    //public List<MedicalInformation> getMedicalInformationByPatientId(int patientId);
+
 
 }

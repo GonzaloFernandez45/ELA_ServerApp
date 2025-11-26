@@ -105,7 +105,11 @@ public class SendDataViaNetwork {
         sendMedications(medicalInformation.getMedication());
 
         // Enviar el feedback
-        dataOutputStream.writeUTF(medicalInformation.getFeedback());
+        String feedback = medicalInformation.getFeedback();
+        if (feedback == null) {
+            feedback = "";  // Si feedback es null, enviar una cadena vacía
+        }
+        dataOutputStream.writeUTF(feedback);
 
         dataOutputStream.flush();
     }
