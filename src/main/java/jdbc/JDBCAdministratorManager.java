@@ -9,19 +9,21 @@ import pojos.Administrator;
 
 public class JDBCAdministratorManager implements AdministratorManager {
     private Connection c;
-
-    public JDBCAdministratorManager(Connection c) {
-        this.c = c;
+    private ConnectionManager conMan;
+    public JDBCAdministratorManager(ConnectionManager conMan) {
+        this.conMan = conMan;
+        this.c = conMan.getConnection();
 
     }
 
     @Override
     public void insertAdministrator(Administrator administrator) {
         try {
-            String sql = "INSERT INTO Administrator (dni, password) VALUES (?,?)";
+            String sql = "INSERT INTO administrator (email, dni) VALUES (?,?)";
             PreparedStatement prep = c.prepareStatement(sql);
-            prep.setString(1, administrator.getDni());
-            prep.setString(2, administrator.getPassword());
+            prep.setString(1, administrator.getEmail());
+            prep.setString(2, administrator.getDni());
+
             prep.executeUpdate();
             prep.close();
         } catch (SQLException e) {
@@ -31,23 +33,43 @@ public class JDBCAdministratorManager implements AdministratorManager {
     }
 
     @Override
-    public Administrator getAdministratorByDNI(String dni) {
+    public Administrator getAdministratorByEmail(String email) {
         Administrator administrator = null;
         try {
-            String sql = "SELECT * FROM Administrator WHERE dni = ?";
+            String sql = "SELECT * FROM Administrator WHERE email = ?";
             PreparedStatement prep = c.prepareStatement(sql);
-            prep.setString(1, dni);
+            prep.setString(1, email);
             ResultSet rs = prep.executeQuery();
             if (rs.next()) {
                 administrator = new Administrator(rs.getInt("id"));
+                administrator.setEmail(rs.getString("email"));
                 administrator.setDni(rs.getString("dni"));
-                administrator.setPassword(rs.getString("password"));
-
             }
             rs.close();
             prep.close();
         } catch (SQLException e) {
-            System.out.println("Error getting administrator by DNI.");
+            System.out.println("Error getting administrator by email.");
+            e.printStackTrace();
+        }
+        return administrator;
+    }
+
+    public Administrator getAdministratorById(int id) {
+        Administrator administrator = null;
+        try {
+            String sql = "SELECT * FROM Administrator WHERE id = ?";
+            PreparedStatement prep = c.prepareStatement(sql);
+            prep.setInt(1, id);
+            ResultSet rs = prep.executeQuery();
+            if (rs.next()) {
+                administrator = new Administrator(rs.getInt("id"));
+                administrator.setEmail(rs.getString("email"));
+                administrator.setDni(rs.getString("dni"));
+            }
+            rs.close();
+            prep.close();
+        } catch (SQLException e) {
+            System.out.println("Error getting administrator by email.");
             e.printStackTrace();
         }
         return administrator;

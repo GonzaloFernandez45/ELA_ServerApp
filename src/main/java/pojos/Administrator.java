@@ -2,18 +2,22 @@ package pojos;
 
 public class Administrator {
     private Integer id;
+    private String email;
     private String dni;
-    private String password;
+
 
 
     public Administrator() {
     }
 
 
-    public Administrator(String dni, String password) {
+    public Administrator(String dni,String email) {
         this.dni = dni;
-        this.password = password;
+        this.email = email;
+
     }
+
+
 
     public Administrator(Integer id) {
         this.id = id;
@@ -29,6 +33,10 @@ public class Administrator {
         this.id = id;
     }
 
+    public String getEmail() { return  email; }
+
+    public void setEmail(String email) { this.email = email; }
+
 
     public String getDni() {
         return dni;
@@ -40,22 +48,15 @@ public class Administrator {
     }
 
 
-    public String getPassword() {
-        return password;
-    }
 
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
 
     @Override
     public String toString() {
         return "Administrator{"
                 + "id=" + id
+                + ", email='" + email + '\''
                 + ", dni='" + dni + '\''
-                + ", password='" + password + '\''
                 + '}';
     }
 }

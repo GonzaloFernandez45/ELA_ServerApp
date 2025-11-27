@@ -76,6 +76,24 @@ public class ReceiveDataViaNetwork {
         return patient;
     }
 
+    public Administrator recieveAdmin(){
+        Administrator administrator= null;
+        try {
+            System.out.println("Receiving administrator data...");;
+            String email = dataInputStream.readUTF();
+            String dni = dataInputStream.readUTF();
+            administrator = new Administrator(dni,email);
+            return administrator;
+        } catch (EOFException ex) {
+            System.out.println("Data not correctly read.");
+        } catch (IOException ex) {
+            System.err.println("Error receiving patient data: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return administrator;
+    }
+
+
     public Doctor receiveDoctor(){
         Doctor doctor = null;
         try {

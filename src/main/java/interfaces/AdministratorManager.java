@@ -3,5 +3,6 @@ import pojos.Administrator;
 
 public interface AdministratorManager {
     public void insertAdministrator(Administrator administrator);
-    public Administrator getAdministratorByDNI(String dni);
+    public Administrator getAdministratorByEmail(String email);
+    public Administrator getAdministratorById(int id);
 }

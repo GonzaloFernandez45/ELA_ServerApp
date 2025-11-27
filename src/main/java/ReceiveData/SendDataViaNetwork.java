@@ -50,6 +50,12 @@ public class SendDataViaNetwork {
         dataOutputStream.writeInt(patient.getInsurance());
         dataOutputStream.flush();
     }
+    public void sendAdmin(Administrator administrator) throws IOException{
+        System.out.println("Sending Admin data...");
+        dataOutputStream.writeUTF(administrator.getEmail());
+        dataOutputStream.writeUTF(administrator.getDni());
+        dataOutputStream.flush();
+    }
 
     public void sendUser(User user) throws IOException{
         dataOutputStream.writeUTF(user.getEmail());
