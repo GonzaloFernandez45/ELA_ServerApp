@@ -10,7 +10,9 @@ public interface SymptomManager {
     public Symptom getSymptom(Symptom s);
     public  Symptom getSymptomById(int symptomId);
     public List<Symptom> getSymptomsForMedicalInfo(int medicalInfoId) ;
+    public List<Symptom> getSymptomsOfMedicalInformation(int medicalInformationId);
 
 
 
-    }
+
+}

@@ -673,10 +673,10 @@ public class Main {
 
                 MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformationByDate(date, patient.getId());
                 //need to set symptoms and medication
-                /*
-                   List<Symptom> symptomsOfMedicalInformation = medicalInformation.getSymptomsOfMedicalInformation(medicalInformation.getId());
-                   medicalInformation.setSymptoms(symptomsOfMedicalInformation);
-                 */
+
+                List<Symptom> symptomsOfMedicalInformation = symptomManager.getSymptomsOfMedicalInformation(medicalInformation.getId());
+                medicalInformation.setSymptoms(symptomsOfMedicalInformation);
+
 
                 sendDataViaNetwork.sendMedicalInformation(medicalInformation);
 

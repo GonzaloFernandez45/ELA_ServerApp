@@ -1,12 +1,14 @@
 package jdbc;
 
 import interfaces.MedicalInformationManager;
+import interfaces.SymptomManager;
 import pojos.MedicalInformation;
 import pojos.Patient;
 import pojos.Symptom;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
@@ -151,6 +153,11 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
                 long millis = Long.parseLong(dateString);
                 Date reportDate = new Date(millis);
                 medicalInformation.setReportDate(reportDate);
+
+                String medsString = rs.getString("medication");
+                List<String> medications = new ArrayList<>(Arrays.asList(medsString.split(",")));
+                medicalInformation.setMedication(medications);
+
                 String feedback = rs.getString("feedback");
                 medicalInformation.setFeedback(feedback);
                 int patientId = rs.getInt("patient_id");
@@ -227,5 +234,7 @@ public class JDBCMedicalInformationManager implements MedicalInformationManager 
 //
 //        return medicalInfos;
 //    }
+
+
 
 }

@@ -100,6 +100,29 @@ public class JDBCSymptomManager implements SymptomManager {
         return symptoms;
     }
 
+    public List<Symptom> getSymptomsOfMedicalInformation(int medicalInformationId){
+        List<Symptom> symptoms = new ArrayList<>();
 
+        try{
+            String sql = "SELECT symptom_id FROM symptom_medical_information WHERE medical_information_id = ?";
+            PreparedStatement pstmt = c.prepareStatement(sql);
+            pstmt.setInt(1, medicalInformationId);
+            ResultSet rs =pstmt.executeQuery();
+
+            while(rs.next()){
+                Symptom symptom = getSymptomById(rs.getInt("symptom_id"));
+                symptoms.add(symptom);
+            }
+
+            rs.close();
+            pstmt.close();
+
+        }catch (SQLException e) {
+            System.out.println("Error in the database");
+            e.printStackTrace();
+        }
+
+        return symptoms;
+    }
 
 }
