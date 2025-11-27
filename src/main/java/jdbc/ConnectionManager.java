@@ -112,7 +112,16 @@ public class ConnectionManager {
             createTables5.close();
 
             Statement createTables6 = conn.createStatement();
-            String create6 = "CREATE TABLE user ("
+            String create6 = "CREATE TABLE administrator("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "email TEXT NOT NULL UNIQUE,"
+                    + "dni TEXT NOT NULL,";
+
+            createTables6.executeUpdate(create6);
+            createTables6.close();
+
+            Statement createTables7 = conn.createStatement();
+            String create7 = "CREATE TABLE user ("
                     + "user_id INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + "email TEXT NOT NULL UNIQUE,"
                     + "password TEXT NOT NULL,"
@@ -120,9 +129,10 @@ public class ConnectionManager {
                     + "patient_id INTEGER,"
                     + "doctor_id INTEGER,"
                     + "FOREIGN KEY (patient_id) REFERENCES patient(id)),"
-                    + "FOREIGN KEY (doctor_id) REFERENCES doctor(id))";
-            createTables6.executeUpdate(create6);
-            createTables6.close();
+                    + "FOREIGN KEY (doctor_id) REFERENCES doctor(id)),"
+                    + "FOREIGN KEY (admin_id) REFERENCES administrator(id))";
+            createTables7.executeUpdate(create7);
+            createTables7.close();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("already exist")){

@@ -49,7 +49,7 @@ public class JDBCUserManager implements UserManager {
 
         public void addUser(User user) {
             try {
-                String template = "INSERT INTO user (email, password, role, patient_id, doctor_id) VALUES (?, ?, ?, ?, ?)";
+                String template = "INSERT INTO user (email, password, role, patient_id, doctor_id, admin_id) VALUES (?, ?, ?, ?, ?, ?)";
                 PreparedStatement pstmt = c.prepareStatement(template);
 
                 String roleStr = user.getRole().toString();
@@ -67,11 +67,19 @@ public class JDBCUserManager implements UserManager {
                 if (roleNorm.contains("PATIENT")) {   // <<< CAMBIO IMPORTANTE
                     System.out.println("Detected PATIENT role in addUser");
                     pstmt.setInt(4, user.getPatient_id());   // patient_id
-                    pstmt.setNull(5, Types.INTEGER);         // doctor_id NULL
+                    pstmt.setNull(5, Types.INTEGER); // doctor_id NULL
+                    pstmt.setNull(6,Types.INTEGER); // admin_id NULL
                 } else if (roleNorm.contains("DOCTOR")) {
                     System.out.println("Detected DOCTOR role in addUser");
                     pstmt.setNull(4, Types.INTEGER);         // patient_id NULL
-                    pstmt.setInt(5, user.getDoctor_id());    // doctor_id
+                    pstmt.setInt(5, user.getDoctor_id());
+                    pstmt.setNull(6,Types.INTEGER); // admin_id NULL
+
+                } else if (roleNorm.contains("ADMINISTRATOR")) {
+                    System.out.println("Detected DOCTOR role in addUser");
+                    pstmt.setNull(4, Types.INTEGER);         // patient_id NULL
+                    pstmt.setNull(5, user.getDoctor_id());// doctor_id NULL
+                    pstmt.setInt(6,user.getAdmin_id());
                 } else {
                     System.out.println("Unknown role, setting both FKs to NULL");
                     pstmt.setNull(4, Types.INTEGER);
