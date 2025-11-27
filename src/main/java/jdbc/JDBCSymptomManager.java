@@ -66,40 +66,8 @@ public class JDBCSymptomManager implements SymptomManager {
         }
         return symptom;
     }
+
     @Override
-    public List<Symptom> getSymptomsForMedicalInfo(int medicalInfoId) {
-        List<Symptom> symptoms = new ArrayList<>();
-        String query = "SELECT s.id, s.description FROM symptom s " +
-                "JOIN symptom_medicalInformation smi ON s.id = smi.symptom_id " +
-                "WHERE smi.medical_information_id = ?";
-        PreparedStatement s = null;
-        ResultSet rs = null;
-
-        try {
-            s = c.prepareStatement(query);
-            s.setInt(1, medicalInfoId);
-            rs = s.executeQuery();
-
-            while (rs.next()) {
-                Symptom symptom = new Symptom();
-                symptom.setId(rs.getInt("id"));
-                symptom.setDescription(rs.getString("description"));
-                symptoms.add(symptom);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (s != null) s.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return symptoms;
-    }
-
     public List<Symptom> getSymptomsOfMedicalInformation(int medicalInformationId){
         List<Symptom> symptoms = new ArrayList<>();
 

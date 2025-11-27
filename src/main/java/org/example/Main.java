@@ -179,7 +179,7 @@ public class Main {
 
 
 
-    private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+    private static void     logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
             try{
                 sendDataViaNetwork.sendStrings("Patient log in");
                 String message = recieveDataViaNetwork.receiveString();
@@ -277,7 +277,10 @@ public class Main {
 
                 doctor.setId(doctor_id);
 
-                menuDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
+                System.out.println("Doctor requested patient list");;
+                Patient patient = selectPatientForDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, patientManager);
+
+                menuDoctor(patient, doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
 
             }else{
                 System.out.println("Error in register");
@@ -288,7 +291,7 @@ public class Main {
             releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
         }
     }
-    private static void selectPatientForDoctor(Doctor doctor, SendDataViaNetwork sendData, ReceiveDataViaNetwork receiveData, PatientManager patientManager
+    private static Patient selectPatientForDoctor(Doctor doctor, SendDataViaNetwork sendData, ReceiveDataViaNetwork receiveData, PatientManager patientManager
     ) throws IOException {
 
         // 1. Obtener lista de pacientes
@@ -311,28 +314,66 @@ public class Main {
         System.out.println("Selecting patient...");
         // 4. Buscar paciente
         Patient selected = patientManager.getPatientbyId(selectedId);
+        System.out.println(selected);
 
         if (selected != null) {
-            sendData.sendStrings(selected.toString());
             System.out.println("Doctor selected patient: " + selected.getName());
+            return selected;
         } else {
             sendData.sendStrings("ERROR: Patient not found");
         }
+        return selected;
     }
 
-    private static void menuDoctor(Doctor doctor, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
+    private static void logInDoctor(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
         try{
-            System.out.println("Doctor requested patient list");;
-            selectPatientForDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, patientManager);
+            sendDataViaNetwork.sendStrings("Doctor log in");
+            String message = recieveDataViaNetwork.receiveString();
+            System.out.println(message);
+            Role role = new Role("Doctor");
+
+            if(message.equals("OK")){
+                User user = recieveDataViaNetwork.recieveUser();
+                boolean correctPassword = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
+                if(correctPassword){
+                    sendDataViaNetwork.sendStrings("SUCCESS");
+
+                    int doctor_id = doctorManager.getDoctorIDFromEmail(user.getEmail());
+                    Doctor doctor = doctorManager.getDoctorbyId(doctor_id);
+                    user.setDoctor_id(doctor_id);
+                    System.out.println(doctor.toString());
+                    sendDataViaNetwork.sendDoctor(doctor);
+
+                    System.out.println("Doctor requested patient list");;
+                    Patient patient = selectPatientForDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, patientManager);
+
+
+                    menuDoctor(patient, doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
+
+                }else{
+                    sendDataViaNetwork.sendStrings("ERROR");}
+            }else{
+                System.out.println("Error in login");
+            }
+
+
+        } catch (IOException e) {
+            System.out.println("Error or client disconnected");
+            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
+        }
+    }
+
+    private static void menuDoctor(Patient patient, Doctor doctor, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork recieveDataViaNetwork, Socket socket, DoctorManager doctorManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
+        try{
+
             boolean doctorMenu = true;
             while(doctorMenu){
                 int opcion = recieveDataViaNetwork.receiveInt();
                 switch(opcion){
                     case 1:
                         System.out.println("SELECTED: View patient details");
-                        viewPatient(socket, recieveDataViaNetwork,sendDataViaNetwork);
-                        //viewPatientMedInfo(socket, recieveDataViaNetwork,sendDataViaNetwork);
-                        doctorViewMedicalInformation(socket,recieveDataViaNetwork,sendDataViaNetwork,doctorManager,patientManager,medicalInformationManager);
+                        viewPatient(patient, socket,recieveDataViaNetwork,sendDataViaNetwork);
+                        doctorViewMedicalInformation(patient,doctor,socket,recieveDataViaNetwork,sendDataViaNetwork,doctorManager,patientManager,medicalInformationManager, symptomManager);
                         break;
                     case 2:
                         System.out.println("SELECTED: Add feedback");
@@ -360,47 +401,13 @@ public class Main {
             releaseResources(recieveDataViaNetwork,sendDataViaNetwork, socket);
         }
     }
-    private static void logInDoctor(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, DoctorManager doctorManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, PatientManager patientManager) throws IOException {
-        try{
-            sendDataViaNetwork.sendStrings("Doctor log in");
-            String message = recieveDataViaNetwork.receiveString();
-            System.out.println(message);
-            Role role = new Role("Doctor");
-
-            if(message.equals("OK")){
-                User user = recieveDataViaNetwork.recieveUser();
-                boolean correctPassword = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
-                if(correctPassword){
-                    sendDataViaNetwork.sendStrings("SUCCESS");
-
-                    int doctor_id = doctorManager.getDoctorIDFromEmail(user.getEmail());
-                    Doctor doctor = doctorManager.getDoctorbyId(doctor_id);
-                    user.setDoctor_id(doctor_id);
-                    System.out.println(doctor.toString());
-                    sendDataViaNetwork.sendDoctor(doctor);
-                    menuDoctor(doctor, sendDataViaNetwork, recieveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
-
-                }else{
-                    sendDataViaNetwork.sendStrings("ERROR");}
-            }else{
-                System.out.println("Error in login");
-            }
 
 
-        } catch (IOException e) {
-            System.out.println("Error or client disconnected");
-            releaseResources(recieveDataViaNetwork,sendDataViaNetwork,socket);
-        }
-    }
-
-    public static void viewPatient(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
-        int pat_id = receiveDataViaNetwork.receiveInt();
-        System.out.println("The doctor has requested the information of the patient:" + pat_id);
-        ConnectionManager connectionManager = new ConnectionManager();
-        JDBCPatientManager patientManager = new JDBCPatientManager(connectionManager);
-        Patient patient = patientManager.getPatientbyId(pat_id);
+    public static void viewPatient(Patient patient, Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
+        System.out.println("The doctor has requested the information of the patient:" + patient.getId());
+        System.out.println(patient);
         if(patient != null){
-            sendDataViaNetwork.sendStrings(patient.toString());
+            sendDataViaNetwork.sendPatient(patient);
         }
         else {
             sendDataViaNetwork.sendStrings("ERROR - PATIENT NOT FOUND");
@@ -622,34 +629,35 @@ public class Main {
 
     }
 
-    private static void doctorViewMedicalInformation(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, DoctorManager doctorManager, PatientManager patientManager, MedicalInformationManager medicalInformationManager) throws IOException {
+    private static void doctorViewMedicalInformation(Patient patient,Doctor doctor, Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, DoctorManager doctorManager, PatientManager patientManager, MedicalInformationManager medicalInformationManager, SymptomManager symptomManager) throws IOException {
         try {
-            String patientEmail = receiveDataViaNetwork.receiveString();  // Get the email of the patient
-
-            // Find the patient by email (using your PatientManager)
-            int patientid = patientManager.getPatientIDFromEmail(patientEmail);
-            if (patientid == -1) {
-                sendDataViaNetwork.sendStrings("ERROR: Patient not found");
-                return;
-            }
-            //Patient patient = patientManager.getPatientbyId(patientid);
 
             // Retrieve all medical information for the patient
-            List<MedicalInformation> medicalInfos = medicalInformationManager.getMedicalInfoByPatientId(patientid);
+            List<MedicalInformation> medicalInfos = medicalInformationManager.getMedicalInfoByPatientId(patient.getId());
 
             if (medicalInfos == null || medicalInfos.isEmpty()) {
                 sendDataViaNetwork.sendStrings("ERROR: No medical information found");
                 return;
             }
 
-            // Send the size of the list to the doctor
-            sendDataViaNetwork.sendInt(medicalInfos.size());
+            //send List to Doctor
+
 
             System.out.println("Sending medical information to doctor...");
-
+            sendDataViaNetwork.sendInt(medicalInfos.size());
             // Send each medical information object to the doctor
             for (MedicalInformation info : medicalInfos) {
+                List<Symptom> symptoms = symptomManager.getSymptomsOfMedicalInformation(info.getId());
+                System.out.println(symptoms);
+                info.setSymptoms(symptoms);
+                System.out.println(medicalInfos);
                 sendDataViaNetwork.sendMedicalInformation(info);
+            }
+
+            String response = receiveDataViaNetwork.receiveString();
+
+            if(response.equals("RECEIVED MEDICAL INFORMATION")){
+                menuDoctor(patient, doctor, sendDataViaNetwork, receiveDataViaNetwork, socket, doctorManager,symptomManager, medicalInformationManager, patientManager);
             }
 
         } catch (Exception e) {
