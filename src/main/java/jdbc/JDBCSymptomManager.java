@@ -104,7 +104,7 @@ public class JDBCSymptomManager implements SymptomManager {
         List<Symptom> symptoms = new ArrayList<>();
 
         try{
-            String sql = "SELECT symptom_id FROM symptom_medical_information WHERE medical_information_id = ?";
+            String sql = "SELECT symptom_id FROM symptom_medicalInformation WHERE medical_information_id = ?";
             PreparedStatement pstmt = c.prepareStatement(sql);
             pstmt.setInt(1, medicalInformationId);
             ResultSet rs =pstmt.executeQuery();
