@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import pojos.*;
 
 public class ReceiveDataViaNetwork {
     private DataInputStream dataInputStream;
@@ -224,6 +225,45 @@ public class ReceiveDataViaNetwork {
             ex.printStackTrace();
         }
         return medicalInformationList;
+    }
+
+
+    public Signal receiveSignal() throws IOException {
+        Signal signal = null;
+
+        try {
+            // 1. Recibir el TIPO (String) y convertirlo de nuevo a Enum
+            String typeString = dataInputStream.readUTF();
+            TypeSignal type = TypeSignal.valueOf(typeString);
+
+            // 2. Recibir el ID del CLIENTE
+            int clientId = dataInputStream.readInt();
+
+            // Creamos el objeto con los datos básicos
+            signal = new Signal(type, clientId);
+
+            // 3. Recibir el TAMAÑO de la lista
+            int size = dataInputStream.readInt();
+            List<Integer> values = new ArrayList<>();
+
+            // 4. Recibir los VALORES uno por uno
+            for (int i = 0; i < size; i++) {
+                int value = dataInputStream.readInt();
+                values.add(value);
+            }
+
+            // Asignamos la lista llena al objeto
+            signal.setValues(values);
+
+        } catch (IllegalArgumentException e) {
+            System.err.println("Error: Tipo de señal desconocido recibido.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("Error recibiendo la señal: " + e.getMessage());
+            throw e; // Relanzamos para que el hilo principal sepa que hubo error
+        }
+
+        return signal;
     }
 
 }

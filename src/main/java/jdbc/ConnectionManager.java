@@ -29,7 +29,7 @@ public class ConnectionManager {
 
 
         this.createTables();
-        this.insertSymptoms();
+        //this.insertSymptoms();
 
     }
 
@@ -133,6 +133,7 @@ public class ConnectionManager {
                     + "FOREIGN KEY (admin_id) REFERENCES administrator(id))";
             createTables7.executeUpdate(create7);
             createTables7.close();
+            this.insertSymptoms();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("already exist")){
@@ -181,6 +182,17 @@ public class ConnectionManager {
             String symptom7 = "INSERT INTO symptom VALUES(7,'Weak neck muscles')";
             insertSymptom7.executeUpdate(symptom7);
             insertSymptom7.close();
+
+            Statement createTables8 = conn.createStatement();
+            String create8 = "CREATE TABLE signal ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "patient_id INTEGER,"
+                    + "type TEXT,"
+                    + "record_date TEXT,"
+                    + "filename TEXT,"
+                    + "FOREIGN KEY (patient_id) REFERENCES patient(id))";
+            createTables8.executeUpdate(create8);
+            createTables8.close();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("UNIQUE constraint failed")) {

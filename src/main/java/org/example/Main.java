@@ -153,38 +153,41 @@ public class Main {
 
             while (patientMenu) {
                 int opcion = recieveDataViaNetwork.receiveInt();
+
                 switch (opcion) {
                     case 1:
-                        System.out.println("Insert medical info");
+                        System.out.println("Option 1: Insert medical info");
                         patientInsertMedicalInformartion(patient, recieveDataViaNetwork, sendDataViaNetwork, socket, patientManager, symptomManager, medicalInformationManager);
                         break;
+
                     case 2:
-                        System.out.println("2. Record Signal");
+                        System.out.println("Option 2: Receiving Signal...");
+                        patientReceiveAndSaveSignal(patient, recieveDataViaNetwork, sendDataViaNetwork);
                         break;
+
                     case 3:
-                        System.out.println("3. Send Signal");
-                        break;
-                    case 4:
-                        System.out.println("4. See doctor´s feedback");
+                        System.out.println("Option 3: Sending doctor feedback");
                         patientSeeDoctorFeedback(patient, recieveDataViaNetwork, sendDataViaNetwork, socket, patientManager, symptomManager, medicalInformationManager);
                         break;
+
                     case 0:
-                        System.out.println("0. Exit");
+                        System.out.println("Client disconnected (Option 0)");
+                        patientMenu = false;
                         break;
+
                     default:
-                        System.out.println("Invalid option");
+                        System.out.println("Invalid option received: " + opcion);
                         break;
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            System.out.println("Error in patient menu: " + ex.getMessage());
             releaseResources(recieveDataViaNetwork, sendDataViaNetwork, socket);
         }
     }
 
 
-
-    private static void     logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
+    private static void logInPatient(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, PatientManager patientManager, UserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager) throws IOException {
             try{
                 sendDataViaNetwork.sendStrings("Patient log in");
                 String message = recieveDataViaNetwork.receiveString();
@@ -834,6 +837,76 @@ public class Main {
     }
 
 
+    // En Main.java
+
+    private static void patientReceiveAndSaveSignal(Patient patient, ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) {
+        try {
+            Signal signal = receiveData.receiveSignal();
+
+            if (signal != null) {
+                // Aseguramos que el ID del paciente sea correcto
+                signal.setClientId(patient.getId());
+
+                // 1. Guardar archivo físico y obtener el nombre generado
+                String generatedFileName = saveSignalToFile(signal, patient);
+
+                // 2. Guardar en Base de Datos
+                ConnectionManager conMan = new ConnectionManager(); // O usa la estática si la tienes accesible
+                JDBCSignalManager signalManager = new JDBCSignalManager(conMan);
+
+                // Usamos la fecha actual
+                java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
+
+                signalManager.addSignal(signal, generatedFileName, date);
+
+                System.out.println("Signal saved in DB and File System.");
+                sendData.sendStrings("OK");
+
+                // Cerramos conexión temporal del manager si no es compartida globalmente
+                // conMan.close();
+            } else {
+                sendData.sendStrings("ERROR");
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static String saveSignalToFile(Signal signal, Patient patient) {
+        // Carpeta donde el servidor guardará los ficheros
+        String directoryName = "ServerSignals";
+        java.io.File directory = new java.io.File(directoryName);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Generar nombre de archivo: Signal_PatientID_Type_Timestamp.txt
+        long timestamp = System.currentTimeMillis();
+        String fileName = "Signal_" + patient.getId() + "_" + signal.getType() + "_" + timestamp + ".txt";
+
+        java.io.File file = new java.io.File(directoryName + "/" + fileName);
+
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(file)) {
+            // Escribir cabecera
+            writer.println("Patient ID: " + patient.getId());
+            writer.println("Signal Type: " + signal.getType());
+            writer.println("Date: " + new java.util.Date(timestamp));
+            writer.println("Values Count: " + signal.getValues().size());
+            writer.println("----- BEGIN DATA -----");
+
+            // Escribir los valores
+            for (Integer val : signal.getValues()) {
+                writer.println(val);
+            }
+
+            System.out.println("File saved at: " + file.getAbsolutePath());
+
+        } catch (java.io.FileNotFoundException e) {
+            System.err.println("Error writing signal file: " + e.getMessage());
+        }
+        return fileName;
+    }
 
 
 }
