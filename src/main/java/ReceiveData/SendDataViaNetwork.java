@@ -149,4 +149,41 @@ public class SendDataViaNetwork {
         dataOutputStream.flush();
     }
 
+    public void sendSignalList(List<Signal> signals) throws IOException {
+        // 1. Enviar cantidad de señales
+        dataOutputStream.writeInt(signals.size());
+
+        // 2. Enviar datos básicos de cada una
+        for (Signal s : signals) {
+            dataOutputStream.writeInt(s.getRecordId()); // ID único en la DB
+            dataOutputStream.writeUTF(s.getType().toString()); // Tipo (EMG/ACC)
+
+            // Enviamos la fecha como String. Si es null, enviamos "Unknown"
+            String dateStr = (s.getDate() != null) ? s.getDate().toString() : "Unknown Date";
+            dataOutputStream.writeUTF(dateStr);
+        }
+        dataOutputStream.flush();
+    }
+
+    public void sendSignal(Signal signal) throws IOException {
+        List<Integer> values = signal.getValues();
+
+        // 1. Tamaño de la lista
+        dataOutputStream.writeInt(values.size());
+
+        // 2. Valores uno a uno
+        for (Integer val : values) {
+            dataOutputStream.writeInt(val);
+        }
+
+        // 3. Nombre del archivo (Necesario para que el Doctor genere el PNG con el mismo nombre)
+        String fileName = (signal.getSignalFilename() != null) ? signal.getSignalFilename() : "signal_temp.txt";
+        dataOutputStream.writeUTF(fileName);
+
+        // 4. Tipo de señal
+        dataOutputStream.writeUTF(signal.getType().toString());
+
+        dataOutputStream.flush();
+    }
+
 }

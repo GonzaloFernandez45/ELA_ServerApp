@@ -10,4 +10,5 @@ public interface SignalManager {
 
         // Para que el doctor recupere la lista de señales de un paciente
         List<Signal> listSignalsByPatientId(int patientId);
+        public Signal getSignalWithValues(int signalId);
 }

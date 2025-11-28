@@ -394,7 +394,7 @@ public class Main {
                         break;
                     case 3:
                         System.out.println("SELECTED: View recorded signal");
-
+                        doctorViewSignals(recieveDataViaNetwork, sendDataViaNetwork);
                         break;
                     case 4:
                         System.out.println("SELECTED: Change patient data");
@@ -427,26 +427,6 @@ public class Main {
 
     }
 
-    //    public static void viewPatientMedInfo(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork)throws IOException{
-//        int patient_id = receiveDataViaNetwork.receiveInt();
-//        System.out.println("The doctor has requested the Medical information of the patient:");
-//        ConnectionManager connectionManager = new ConnectionManager();
-//        JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(connectionManager);
-//        List<MedicalInformation> medicalInformation = medicalInformationManager.getMedicalInfoByPatientId(patient_id);
-//        sendDataViaNetwork.sendInt(medicalInformation.size());
-//        for(MedicalInformation mi : medicalInformation){
-//            sendDataViaNetwork.sendInt(mi.getId());
-//            sendDataViaNetwork.sendStrings(mi.getReportDate().toString());
-//            sendDataViaNetwork.sendInt(mi.getMedication().size());
-//            for(String medication : mi.getMedication()){
-//                sendDataViaNetwork.sendStrings(medication);
-//            }
-//            sendDataViaNetwork.sendInt(mi.getSymptoms().size());
-//            for(Symptom symptom : mi.getSymptoms()){
-//                sendDataViaNetwork.sendStrings(symptom.getDescription());
-//            }
-//        }
-//    }
     public static void viewPatientMedInfo(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork) throws IOException {
         int patient_id = receiveDataViaNetwork.receiveInt();
         System.out.println("The doctor has requested the Medical information of the patient:");
@@ -839,7 +819,6 @@ public class Main {
     }
 
 
-    // En Main.java
 
     private static void patientReceiveAndSaveSignal(Patient patient, ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) {
         ConnectionManager conMan = null;
@@ -978,6 +957,61 @@ public class Main {
         }
 
         g2.dispose(); // Liberar recursos gráficos
+    }
+
+    private static void doctorViewSignals(ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) throws IOException {
+        ConnectionManager cm = null;
+        try {
+            // 1. Recibir ID del paciente
+            int patientIdForSignal = receiveData.receiveInt();
+
+            // 2. Preparar conexión y Manager
+            cm = new ConnectionManager();
+            JDBCSignalManager signalManager = new JDBCSignalManager(cm);
+
+            // 3. Obtener lista de señales
+            List<Signal> signals = signalManager.listSignalsByPatientId(patientIdForSignal);
+
+            // 4. Enviar lista al doctor (Metadatos)
+            sendData.sendSignalList(signals);
+
+            // Si no hay señales, cerramos y salimos
+            if (signals.isEmpty()) {
+                System.out.println("No signals found for patient " + patientIdForSignal);
+                return;
+            }
+
+            // 5. Esperar selección del doctor
+            int selectedSignalId = receiveData.receiveInt();
+
+            if (selectedSignalId == -1) {
+                System.out.println("Doctor cancelled signal view.");
+                return;
+            }
+
+            System.out.println("Retrieving content for Signal ID: " + selectedSignalId);
+
+            // 6. Recuperar señal completa (Leyendo el archivo .txt)
+            Signal fullSignal = signalManager.getSignalWithValues(selectedSignalId);
+
+            if (fullSignal != null) {
+                // 7. Enviar señal completa (Datos)
+                sendData.sendSignal(fullSignal);
+                System.out.println("Signal data sent successfully.");
+            } else {
+                System.out.println("Error: Signal file not found or corrupted.");
+                // Opcional: Podrías enviar una señal vacía o manejar error en el cliente
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error handling signal view: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            // Aseguramos cerrar la conexión temporal
+            if (cm != null) {
+                cm.close();
+            }
+        }
     }
 
 
