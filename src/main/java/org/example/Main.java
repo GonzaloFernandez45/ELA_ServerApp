@@ -14,11 +14,13 @@ import jdbc.*;
 import ReceiveData.*;
 import pojos.*;
 import jdbc.JDBCPatientManager;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.util.List;
 
-//prueba
-
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
 
     private static int activeClients = 0;
@@ -840,36 +842,40 @@ public class Main {
     // En Main.java
 
     private static void patientReceiveAndSaveSignal(Patient patient, ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) {
+        ConnectionManager conMan = null;
         try {
             Signal signal = receiveData.receiveSignal();
 
             if (signal != null) {
-                // Aseguramos que el ID del paciente sea correcto
                 signal.setClientId(patient.getId());
 
-                // 1. Guardar archivo físico y obtener el nombre generado
+                // 1. Guardar archivo de texto (.txt)
                 String generatedFileName = saveSignalToFile(signal, patient);
 
-                // 2. Guardar en Base de Datos
-                ConnectionManager conMan = new ConnectionManager(); // O usa la estática si la tienes accesible
+                // --- NUEVO: 2. Generar imagen gráfica (.png) ---
+                generateSignalGraph(signal, generatedFileName);
+                // ----------------------------------------------
+
+                // 3. Guardar en Base de Datos (usando el nombre del txt o ambos)
+                conMan = new ConnectionManager();
                 JDBCSignalManager signalManager = new JDBCSignalManager(conMan);
 
-                // Usamos la fecha actual
                 java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
 
+                // En la BBDD guardamos el nombre base. El doctor sabrá que existen .txt y .png
                 signalManager.addSignal(signal, generatedFileName, date);
 
-                System.out.println("Signal saved in DB and File System.");
+                System.out.println("Signal saved in DB, TXT and PNG.");
                 sendData.sendStrings("OK");
 
-                // Cerramos conexión temporal del manager si no es compartida globalmente
-                // conMan.close();
             } else {
                 sendData.sendStrings("ERROR");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (conMan != null) conMan.close();
         }
     }
 
@@ -882,6 +888,7 @@ public class Main {
         }
 
         // Generar nombre de archivo: Signal_PatientID_Type_Timestamp.txt
+        //Poner para que guarde bien la fecha de registro en el nombre del file
         long timestamp = System.currentTimeMillis();
         String fileName = "Signal_" + patient.getId() + "_" + signal.getType() + "_" + timestamp + ".txt";
 
@@ -906,6 +913,71 @@ public class Main {
             System.err.println("Error writing signal file: " + e.getMessage());
         }
         return fileName;
+    }
+
+    private static void generateSignalGraph(Signal signal, String txtFileName) {
+        int width = 800;   // Ancho de la imagen
+        int height = 600;  // Alto de la imagen
+        int padding = 50;  // Margen blanco alrededor
+
+        // 1. Crear el lienzo (Canvas)
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2 = image.createGraphics();
+
+        // 2. Fondo blanco
+        g2.setColor(Color.WHITE);
+        g2.fillRect(0, 0, width, height);
+
+        // 3. Dibujar ejes (Negro)
+        g2.setColor(Color.BLACK);
+        g2.drawLine(padding, height - padding, width - padding, height - padding); // Eje X
+        g2.drawLine(padding, padding, padding, height - padding); // Eje Y
+
+        // 4. Dibujar línea base (512 es el centro en BITalino de 10 bits)
+        g2.setColor(Color.LIGHT_GRAY);
+        int baselineY = height - padding - (int) ((512.0 / 1023.0) * (height - 2 * padding));
+        g2.drawLine(padding, baselineY, width - padding, baselineY);
+        g2.drawString("Base (512)", padding + 5, baselineY - 5);
+
+        // 5. Configurar escalas
+        List<Integer> values = signal.getValues();
+        if (values.isEmpty()) return;
+
+        double xScale = (double) (width - 2 * padding) / (values.size() - 1);
+        // BITalino va de 0 a 1023. Escalamos para que quepa en la altura.
+        double yScale = (double) (height - 2 * padding) / 1023.0;
+
+        // 6. Dibujar la señal (Azul)
+        g2.setColor(Color.BLUE);
+
+        for (int i = 0; i < values.size() - 1; i++) {
+            int x1 = padding + (int) (i * xScale);
+            int y1 = height - padding - (int) (values.get(i) * yScale);
+
+            int x2 = padding + (int) ((i + 1) * xScale);
+            int y2 = height - padding - (int) (values.get(i + 1) * yScale);
+
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        // 7. Añadir texto informativo
+        g2.setColor(Color.BLACK);
+        g2.drawString("Patient: " + signal.getClientId() + " | Type: " + signal.getType(), padding, padding - 20);
+
+        // 8. Guardar la imagen
+        // Usamos el mismo nombre que el .txt pero cambiamos la extensión a .png
+        String imageFileName = txtFileName.replace(".txt", ".png");
+        // Asegúrate de usar la misma carpeta "ServerSignals"
+        File outputFile = new File("ServerSignals/" + imageFileName);
+
+        try {
+            ImageIO.write(image, "png", outputFile);
+            System.out.println("Gráfica generada: " + outputFile.getAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Error al guardar la imagen: " + e.getMessage());
+        }
+
+        g2.dispose(); // Liberar recursos gráficos
     }
 
 
