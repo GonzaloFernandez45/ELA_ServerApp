@@ -654,44 +654,90 @@ public class ServerControl {
         }
     }
 
-    private void patientSeeDoctorFeedback(Patient patient) {
+private void patientSeeDoctorFeedback(Patient patient) {
 
-        try {
-            String message = receiveDataViaNetwork.receiveString();
+    try {
+        String message = receiveDataViaNetwork.receiveString();
 
-            if (message.equals("REQUEST FEEDBACK")) {
-                System.out.println("Received request feedback, sending feedback");
-                sendDataViaNetwork.sendStrings("OK");
+        if (message.equals("REQUEST FEEDBACK")) {
+            System.out.println("Received request feedback, sending list of reports");
+            sendDataViaNetwork.sendStrings("OK");
 
-                //buscar por fecha el medical report
-                String dateString = receiveDataViaNetwork.receiveString();
-                Date date = Date.valueOf(dateString);
+            // 1. Obtener todos los medical reports de ese paciente
+            List<MedicalInformation> medicalList =
+                    medicalInformationManager.getMedicalInfoByPatientId(patient.getId());
+            // Ajusta este método al que tengas en tu manager
 
-                MedicalInformation medicalInformation = medicalInformationManager.getMedicalInformationByDate(date, patient.getId());
-                //need to set symptoms and medication
+            // 2. Enviar cuántos hay
+            int size = (medicalList == null) ? 0 : medicalList.size();
+            sendDataViaNetwork.sendInt(size);
 
-                List<Symptom> symptomsOfMedicalInformation = symptomManager.getSymptomsOfMedicalInformation(medicalInformation.getId());
-                medicalInformation.setSymptoms(symptomsOfMedicalInformation);
+            if (size == 0) {
+                System.out.println("No medical information for patient " + patient.getId());
+                return; // no hay nada más que hacer
+            }
 
+            // 3. Enviar, para cada informe, "fecha | Symptoms: xxx, yyy, zzz"
+            for (MedicalInformation mi : medicalList) {
 
-                sendDataViaNetwork.sendMedicalInformation(medicalInformation);
+                // Cargar síntomas de ese informe
+                List<Symptom> symptomsOfMI =
+                        symptomManager.getSymptomsOfMedicalInformation(mi.getId());
 
-                String response = receiveDataViaNetwork.receiveString();
-                if (response != null && response.equals("RECEIVED MEDICAL INFORMATION")) {
-                    System.out.println("Patient confirmed reception of doctor feedback.");
+                StringBuilder symptomsText = new StringBuilder();
+                if (symptomsOfMI != null && !symptomsOfMI.isEmpty()) {
+                    for (int i = 0; i < symptomsOfMI.size(); i++) {
+                        Symptom s = symptomsOfMI.get(i);
+                        symptomsText.append(s.getDescription());
+                        if (i < symptomsOfMI.size() - 1) {
+                            symptomsText.append(", ");
+                        }
+                    }
+                } else {
+                    symptomsText.append("None");
                 }
 
-            }else{
-                sendDataViaNetwork.sendStrings("ERROR");
+                // Ejemplo de línea: "2025-11-25 | Symptoms: Muscle fatigue, Difficulty swallowing"
+                String line = mi.getReportDate().toString() + " | Symptoms: " + symptomsText;
+                sendDataViaNetwork.sendStrings(line);
             }
-        }catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error or client disconnected");
-            releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
+
+            // 4. Recibir la selección del paciente (1..size)
+            int selection = receiveDataViaNetwork.receiveInt();
+            System.out.println("Patient selected report index: " + selection);
+
+            if (selection < 1 || selection > size) {
+                System.out.println("Invalid selection received from patient.");
+                sendDataViaNetwork.sendStrings("ERROR");
+                return;
+            }
+
+            // 5. Escoger el MedicalInformation correspondiente
+            MedicalInformation selectedMI = medicalList.get(selection - 1);
+
+            // Cargar síntomas completos para el informe seleccionado (si quieres, de nuevo)
+            List<Symptom> symptomsOfSelected =
+                    symptomManager.getSymptomsOfMedicalInformation(selectedMI.getId());
+            selectedMI.setSymptoms(symptomsOfSelected);
+
+            // 6. Enviar ese MedicalInformation al cliente
+            sendDataViaNetwork.sendMedicalInformation(selectedMI);
+
+            // 7. Esperar confirmación
+            String response = receiveDataViaNetwork.receiveString();
+            if (response != null && response.equals("RECEIVED MEDICAL INFORMATION")) {
+                System.out.println("Patient confirmed reception of doctor feedback.");
+            }
+
+        } else {
+            sendDataViaNetwork.sendStrings("ERROR");
         }
-
-
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Error or client disconnected");
+        releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
     }
+}
 
 
     private void adminRegister() throws IOException {
