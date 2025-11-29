@@ -1,79 +1,72 @@
-package ReceiveData;
+package org.example;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import ReceiveData.ReceiveDataViaNetwork;
+import ReceiveData.SendDataViaNetwork;
+import ReceiveData.ServerControl;
+import jdbc.*;
 import java.io.IOException;
 import java.net.Socket;
-import interfaces.*;
-import pojos.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class ClientHandler extends Thread {
-    private Socket clientSocket;
-    private SymptomManager symptomManager;
-    private DataInputStream dataInputStream;
-    private DataOutputStream dataOutputStream;
+public class ClientHandler implements Runnable {
 
-    public ClientHandler(Socket socket, SymptomManager symptomManager) {
-        this.clientSocket = socket;
-        this.symptomManager = symptomManager;
+    private Socket socket;
+
+    public ClientHandler(Socket socket) {
+        this.socket = socket;
     }
 
     @Override
     public void run() {
+        ConnectionManager connectionManager = new ConnectionManager();
+        JDBCPatientManager patientManager = new JDBCPatientManager(connectionManager);
+        JDBCUserManager userManager = new JDBCUserManager(connectionManager);
+        JDBCSymptomManager symptomManager = new JDBCSymptomManager(connectionManager);
+        JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(connectionManager);
+        JDBCDoctorManager doctorManager = new JDBCDoctorManager(connectionManager);
+        JDBCAdministratorManager administratorManager = new JDBCAdministratorManager(connectionManager);
+
+        ReceiveDataViaNetwork receiveData = null;
+        SendDataViaNetwork sendData = null;
+
         try {
-            // Crear los flujos de entrada y salida binaria
-            dataInputStream = new DataInputStream(clientSocket.getInputStream());
-            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
+            System.out.println("Handling client in thread: " + Thread.currentThread().getName());
 
-            // Leer el ID del síntoma desde el cliente (4 bytes)
-            int symptomId = dataInputStream.readInt();
+            receiveData = new ReceiveDataViaNetwork(socket);
+            sendData = new SendDataViaNetwork(socket);
+            System.out.println("Socket accepted in handler: " + socket.getRemoteSocketAddress());
 
-            // Obtener el síntoma desde el SymptomManager
-            Symptom symptom = symptomManager.getSymptomById(symptomId);
+            ServerControl controller = new ServerControl(
+                    socket,
+                    receiveData,
+                    sendData,
+                    patientManager,
+                    userManager,
+                    symptomManager,
+                    medicalInformationManager,
+                    doctorManager,
+                    administratorManager
+            );
 
-            // Enviar el síntoma al cliente (comenzamos por el ID, luego los atributos)
-            // Si el objeto Symptom tiene propiedades como String, int, etc., lo mandas con writeUTF, writeInt, etc.
-            if (symptom != null) {
-                // Enviar el ID del síntoma primero
-                dataOutputStream.writeInt(symptom.getId());
-
-                // Luego enviar otros atributos del Symptom como datos binarios
-                dataOutputStream.writeUTF(symptom.getDescription());  // Si el nombre es String
-                // Agregar otros atributos si los tienes, por ejemplo:
-                // dataOutputStream.writeUTF(symptom.getDescription());  // Ejemplo
-            } else {
-                // Enviar un código de error si no se encuentra el síntoma
-                dataOutputStream.writeInt(-1); // Código de error para "No encontrado"
-            }
-
-            dataOutputStream.flush();  // Asegurarse de que los datos se envíen
+            controller.handleFirstMessage();
 
         } catch (IOException e) {
-            System.err.println("Error handling client request: " + e.getMessage());
-            e.printStackTrace();
+            Logger.getLogger(ClientHandler.class.getName())
+                    .log(Level.SEVERE, "Error handling client", e);
         } finally {
-            // Liberar recursos
             try {
-                releaseResources();
-                clientSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                if (receiveData != null && sendData != null) {
+                    sendData.releaseResources();
+                    receiveData.releaseResources();
+                }
+                if (socket != null && !socket.isClosed()) {
+                    socket.close();
+                }
+            } catch (IOException ex) {
+                System.out.println("Error releasing resources: " + ex.getMessage());
             }
-        }
-    }
-
-    public void releaseResources() {
-        try {
-            if (dataInputStream != null) {
-                dataInputStream.close();
-            }
-            if (dataOutputStream != null) {
-                dataOutputStream.close();
-            }
-        } catch (IOException ex) {
-            System.err.println("Error with resources: " + ex.getMessage());
-            ex.printStackTrace();
+            System.out.println("Client disconnected: " + socket);
         }
     }
 }
-

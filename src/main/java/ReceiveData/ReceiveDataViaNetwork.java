@@ -32,14 +32,14 @@ public class ReceiveDataViaNetwork {
     }
 
     public int receiveInt() {
-        int message = 0;
+        ;
         try {
-            message = dataInputStream.readInt();
+            return dataInputStream.readInt();
         } catch (IOException ex) {
             System.err.println("Error receiving int: " + ex.getMessage());
-            ex.printStackTrace();
+            return -1;
         }
-        return message;
+
     }
 
     public void releaseResources() {
