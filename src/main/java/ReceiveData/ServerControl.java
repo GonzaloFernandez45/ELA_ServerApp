@@ -443,55 +443,59 @@ public class ServerControl {
 
     public void selectAndUpdateFeedback() throws IOException {
 
-        // Paso 1: Recibir el patientId del médico
+        // 1. Recibir ID del paciente
         int patientId = receiveDataViaNetwork.receiveInt();
 
-        // Paso 2: Obtener todos los registros de medical_information para el paciente
+        // 2. Obtener lista de la base de datos
         List<MedicalInformation> medicalInfoList = medicalInformationManager.getMedicalInfoByPatientId(patientId);
 
-        // Paso 3: Comprobar si hay registros médicos
+        // 3. Comprobar si está vacía
         if (medicalInfoList.isEmpty()) {
-            // Enviar un mensaje al doctor indicando que no hay registros médicos
             sendDataViaNetwork.sendStrings("No medical records found for this patient.");
-            return;  // Terminar la ejecución si no hay registros médicos
-        }
-
-        // Paso 4: Enviar la lista de registros médicos al doctor
-        StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
-        for (int i = 0; i < medicalInfoList.size(); i++) {
-            MedicalInformation m = medicalInfoList.get(i);
-            records.append(i + 1).append(". Date: ").append(m.getReportDate()).append(" Feedback: ").append(m.getFeedback()).append("\n");
-        }
-        sendDataViaNetwork.sendStrings(records.toString());  // Enviar los registros al doctor
-
-        // Paso 5: Recibir la selección del médico (el índice del registro)
-        int selectedIndex = receiveDataViaNetwork.receiveInt();  // El médico selecciona el registro por índice
-
-        // Paso 6: Validar la selección del registro
-        if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
-            sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
             return;
         }
 
-        // Paso 7: Obtener el registro seleccionado
-        MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);  // Ajustamos el índice para 0-based
+        // 4. Enviar lista al doctor
+        StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
+        // Usamos un bucle for-i tradicional para tener control total del índice
+        for (int i = 0; i < medicalInfoList.size(); i++) {
+            MedicalInformation m = medicalInfoList.get(i);
+            // El usuario ve opciones del 1 al N
+            records.append(i + 1)
+                    .append(". Date: ").append(m.getReportDate())
+                    .append(" | Current Feedback: ").append(m.getFeedback() == null ? "None" : m.getFeedback())
+                    .append("\n");
+        }
+        sendDataViaNetwork.sendStrings(records.toString());
 
-        // Paso 8: Recibir el nuevo feedback del médico
-        String newFeedback = receiveDataViaNetwork.receiveString();
+        // 5. Recibir selección (1-based index)
+        int selectedIndex = receiveDataViaNetwork.receiveInt();
 
-        // Paso 9: Actualizar el feedback del registro seleccionado
-        boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
-
-        // Paso 10: Preparar el mensaje de respuesta
-        String responseMessage;
-        if (success) {
-            responseMessage = "Feedback updated successfully for the selected record.";
-        } else {
-            responseMessage = "Error updating feedback for the selected record.";
+        // 6. VALIDACIÓN CORREGIDA
+        // El usuario elige entre 1 y size().
+        if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
+            sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
+            // IMPORTANTE: Consumimos el string del feedback "fantasma" que el cliente envía justo después
+            // para no desincronizar el socket en la siguiente vuelta.
+            receiveDataViaNetwork.receiveString();
+            return;
         }
 
-        // Paso 11: Enviar la respuesta al médico
-        sendDataViaNetwork.sendStrings(responseMessage);
+        // 7. Obtener registro (convertir a 0-based index)
+        MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);
+
+        // 8. Recibir nuevo feedback
+        String newFeedback = receiveDataViaNetwork.receiveString();
+
+        // 9. Actualizar en DB
+        boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
+
+        // 10. Responder
+        if (success) {
+            sendDataViaNetwork.sendStrings("Feedback updated successfully!");
+        } else {
+            sendDataViaNetwork.sendStrings("Error updating feedback in database.");
+        }
     }
 
 
