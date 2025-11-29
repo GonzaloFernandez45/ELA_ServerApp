@@ -12,82 +12,130 @@ public class AdminGUI extends JFrame {
     private JPanel mainPanel;
 
     // Paneles
-    private JPanel connectPanel; // <--- Nuevo panel
+    private JPanel connectPanel;
     private JPanel authPanel;
     private JPanel menuPanel;
 
     // Componentes de connectPanel
     private JTextField ipField;
 
+    // Colores y fuentes iguales que PatientGUI
+    private static final Color BG_COLOR = new Color(238, 244, 255);
+    private static final Color CARD_COLOR = Color.WHITE;
+    private static final Color BORDER_COLOR = new Color(210, 220, 240);
+    private static final Color TEXT_DARK = new Color(30, 30, 30);
+    private static final Color BLUE_BUTTON = new Color(86, 132, 225);
+    private static final Font TITLE_FONT = new Font("SansSerif", Font.BOLD, 26);
+    private static final Font SUBTITLE_FONT = new Font("SansSerif", Font.BOLD, 20);
+    private static final Font BUTTON_FONT = new Font("SansSerif", Font.PLAIN, 15);
+
     public AdminGUI() {
         super("Telemedicine - Administrator");
-        // Nota: Ya no pedimos el 'context' en el constructor
+
+        // Look&Feel Nimbus
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception ignored) {}
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
+        setSize(900, 600);
+        setMinimumSize(new Dimension(900, 600));
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
+        mainPanel.setBackground(BG_COLOR);
 
-        // 1. Crear los paneles
-        connectPanel = createConnectPanel(); // <--- Creamos el panel de conexión
+        connectPanel = createConnectPanel();
         authPanel = createAuthPanel();
         menuPanel = createMenuPanel();
 
-        // 2. Añadirlos al CardLayout
         mainPanel.add(connectPanel, "CONNECT");
         mainPanel.add(authPanel, "AUTH");
         mainPanel.add(menuPanel, "MENU");
 
         setContentPane(mainPanel);
-
-        // 3. Mostrar primero la pantalla de conexión
         cardLayout.show(mainPanel, "CONNECT");
-
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            // Ya no conectamos aquí, solo lanzamos la interfaz
-            new AdminGUI();
-        });
+        SwingUtilities.invokeLater(AdminGUI::new);
     }
 
-    // ===================== PANTALLA 0: CONEXIÓN AL SERVIDOR =====================
+    // ===== Helper UI =====
+
+    private void styleCard(JPanel panel) {
+        panel.setBackground(CARD_COLOR);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
+        ));
+    }
+
+    private void styleMenuButton(JButton button) {
+        button.setFont(BUTTON_FONT);
+        button.setFocusPainted(false);
+        button.setBackground(new Color(245, 248, 255));
+        button.setForeground(TEXT_DARK);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COLOR),
+                BorderFactory.createEmptyBorder(8, 16, 8, 16)
+        ));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+    }
+
+    // ===== Pantalla Conexión =====
 
     private JPanel createConnectPanel() {
+        JPanel bg = new JPanel(new GridBagLayout());
+        bg.setBackground(BG_COLOR);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        styleCard(panel);
 
         JLabel title = new JLabel("Welcome to Telemedicine");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(new Font("Arial", Font.BOLD, 22));
+        title.setFont(TITLE_FONT);
 
         JLabel ipLabel = new JLabel("Enter Server IP Address:");
+        ipLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
         ipLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // Campo de texto con "localhost" por defecto
-        ipField = new JTextField("localhost");
-        ipField.setMaximumSize(new Dimension(200, 30));
+        ipField = new JTextField("localhost", 18);
+        ipField.setMaximumSize(new Dimension(260, 32));
         ipField.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton connectButton = new JButton("Connect");
+        connectButton.setBackground(BLUE_BUTTON);
+        connectButton.setForeground(Color.WHITE);
+        connectButton.setFont(BUTTON_FONT);
+        connectButton.setFocusPainted(false);
+        connectButton.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
+        connectButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         connectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         connectButton.addActionListener(e -> attemptConnection());
 
-        panel.add(Box.createVerticalStrut(50));
-        panel.add(title);
-        panel.add(Box.createVerticalStrut(40));
-        panel.add(ipLabel);
         panel.add(Box.createVerticalStrut(10));
+        panel.add(title);
+        panel.add(Box.createVerticalStrut(25));
+        panel.add(ipLabel);
+        panel.add(Box.createVerticalStrut(8));
         panel.add(ipField);
         panel.add(Box.createVerticalStrut(20));
         panel.add(connectButton);
+        panel.add(Box.createVerticalStrut(10));
 
-        return panel;
+        bg.add(panel);
+        return bg;
     }
 
     private void attemptConnection() {
@@ -98,83 +146,105 @@ public class AdminGUI extends JFrame {
         }
 
         try {
-            // Intentamos conectar creando el contexto
-            // Asumimos puerto 8888 fijo, pero podrías poner otro campo para el puerto
             this.context = new AdminClientContext(ip, 8888);
-
-            // Si no da error, pasamos a la siguiente pantalla
-            JOptionPane.showMessageDialog(this, "Connected to server successfully!");
+            JOptionPane.showMessageDialog(this, "Connected successfully!");
             cardLayout.show(mainPanel, "AUTH");
-
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Error connecting to server at " + ip + ":\n" + e.getMessage(),
-                    "Connection Error",
-                    JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error connecting: " + e.getMessage(),
+                    "Connection error",
+                    JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
-    // ===================== PANTALLA 1: LOGIN / REGISTER =====================
+    // ===== Pantalla Auth =====
 
     private JPanel createAuthPanel() {
+        JPanel bg = new JPanel(new GridBagLayout());
+        bg.setBackground(BG_COLOR);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        styleCard(panel);
+        panel.setPreferredSize(new Dimension(380, 260));
 
         JLabel title = new JLabel("Admin Login");
+        title.setFont(SUBTITLE_FONT);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(new Font("Arial", Font.BOLD, 20));
 
         JButton loginButton = new JButton("Log in");
         JButton registerButton = new JButton("Register");
 
-        loginButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        registerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        styleMenuButton(loginButton);
+        styleMenuButton(registerButton);
 
         loginButton.addActionListener(e -> showLoginForm());
         registerButton.addActionListener(e -> showRegisterForm());
 
-        panel.add(Box.createVerticalStrut(40));
+        panel.add(Box.createVerticalStrut(15));
         panel.add(title);
-        panel.add(Box.createVerticalStrut(40));
+        panel.add(Box.createVerticalStrut(25));
         panel.add(loginButton);
         panel.add(Box.createVerticalStrut(10));
         panel.add(registerButton);
+        panel.add(Box.createVerticalStrut(15));
 
-        return panel;
+        bg.add(panel);
+        return bg;
     }
 
     private void showLoginForm() {
         JDialog dialog = new JDialog(this, "Log in", true);
-        dialog.setSize(400, 200);
-        dialog.setLayout(new GridLayout(3, 2));
+        dialog.setLayout(new GridBagLayout());
+        dialog.getContentPane().setBackground(CARD_COLOR);
 
-        JTextField emailField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
+        JPanel content = new JPanel(new GridBagLayout());
+        content.setBackground(CARD_COLOR);
 
-        dialog.add(new JLabel("Email:"));
-        dialog.add(emailField);
-        dialog.add(new JLabel("Password:"));
-        dialog.add(passwordField);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4,8,4,8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JTextField emailField = new JTextField(18);
+        JPasswordField passwordField = new JPasswordField(18);
+
+        gbc.gridx=0; gbc.gridy=0;
+        content.add(new JLabel("Email:"), gbc);
+        gbc.gridx=1;
+        content.add(emailField, gbc);
+
+        gbc.gridx=0; gbc.gridy=1;
+        content.add(new JLabel("Password:"), gbc);
+        gbc.gridx=1;
+        content.add(passwordField, gbc);
 
         JButton loginBtn = new JButton("Log in");
-        dialog.add(new JLabel());
-        dialog.add(loginBtn);
+        loginBtn.setBackground(BLUE_BUTTON);
+        loginBtn.setForeground(Color.WHITE);
+        loginBtn.setFont(BUTTON_FONT);
+        loginBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        loginBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        gbc.gridy=2; gbc.gridx=0;
+        gbc.gridwidth=2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        content.add(loginBtn, gbc);
 
         loginBtn.addActionListener(ev -> {
-            String email = emailField.getText();
-            String password = new String(passwordField.getPassword());
             try {
                 boolean ok = context.getAdminUI().logInFromGUI(
-                        email,
-                        password,
+                        emailField.getText(),
+                        new String(passwordField.getPassword()),
                         context.getSocket(),
                         context.getSendData(),
                         context.getReceiveData()
                 );
                 if (ok) {
-                    JOptionPane.showMessageDialog(dialog, "Log in successful");
+                    JOptionPane.showMessageDialog(dialog, "Login successful");
                     dialog.dispose();
-                    cardLayout.show(dialog, "MENU");
+                    cardLayout.show(mainPanel, "MENU");
                 } else {
                     JOptionPane.showMessageDialog(dialog,
                             "Incorrect user or password",
@@ -182,33 +252,58 @@ public class AdminGUI extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(dialog,
-                        "Connection error: " + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
             }
         });
 
+        dialog.getContentPane().add(content);
+        dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
     private void showRegisterForm() {
         JDialog dialog = new JDialog(this, "Register", true);
-        dialog.setSize(450, 350);
-        dialog.setLayout(new GridLayout(8, 2));
+        dialog.setLayout(new GridBagLayout());
+        dialog.getContentPane().setBackground(CARD_COLOR);
 
-        JTextField emailField = new JTextField();
-        JTextField dniField = new JTextField();
-        JPasswordField passwordField = new JPasswordField();
+        JPanel content = new JPanel(new GridBagLayout());
+        content.setBackground(CARD_COLOR);
 
-        dialog.add(new JLabel("Email:")); dialog.add(emailField);
-        dialog.add(new JLabel("DNI:")); dialog.add(dniField);
-        dialog.add(new JLabel("Password:")); dialog.add(passwordField);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(3,8,3,8);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JTextField emailField = new JTextField(18);
+        JTextField dniField = new JTextField(12);
+        JPasswordField passwordField = new JPasswordField(18);
+
+        gbc.gridx=0; gbc.gridy=0;
+        content.add(new JLabel("Email:"), gbc);
+        gbc.gridx=1;
+        content.add(emailField, gbc);
+
+        gbc.gridx=0; gbc.gridy=1;
+        content.add(new JLabel("DNI:"), gbc);
+        gbc.gridx=1;
+        content.add(dniField, gbc);
+
+        gbc.gridx=0; gbc.gridy=2;
+        content.add(new JLabel("Password:"), gbc);
+        gbc.gridx=1;
+        content.add(passwordField, gbc);
 
         JButton registerBtn = new JButton("Register");
-        dialog.add(new JLabel());
-        dialog.add(registerBtn);
+        registerBtn.setBackground(BLUE_BUTTON);
+        registerBtn.setForeground(Color.WHITE);
+        registerBtn.setFont(BUTTON_FONT);
+        registerBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        registerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        gbc.gridy=3; gbc.gridx=0;
+        gbc.gridwidth=2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        content.add(registerBtn, gbc);
 
         registerBtn.addActionListener(ev -> {
             try {
@@ -221,7 +316,7 @@ public class AdminGUI extends JFrame {
                         context.getReceiveData()
                 );
                 if (ok) {
-                    JOptionPane.showMessageDialog(dialog, "Admin registered successfully");
+                    JOptionPane.showMessageDialog(dialog, "Registered successfully");
                     dialog.dispose();
                     cardLayout.show(mainPanel, "MENU");
                 } else {
@@ -231,40 +326,43 @@ public class AdminGUI extends JFrame {
                             JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(dialog,
-                        "Connection error: " + ex.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
             }
         });
 
+        dialog.getContentPane().add(content);
+        dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
-
-
-    // ===================== PANTALLA : MENU 1 OPCION =====================
+    // ===== Pantalla Menu =====
 
     private JPanel createMenuPanel() {
+        JPanel bg = new JPanel(new GridBagLayout());
+        bg.setBackground(BG_COLOR);
+
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        styleCard(panel);
 
-        JLabel title = new JLabel("Admin menu");
+        JLabel title = new JLabel("Admin Menu");
+        title.setFont(SUBTITLE_FONT);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setFont(new Font("Arial", Font.BOLD, 18));
 
         JButton closeServerButton = new JButton("Close server");
+        styleMenuButton(closeServerButton);
 
-        closeServerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // **Pendiente** implementar acción
+        //closeServerButton.addActionListener(e -> {});
 
-        //closeServerButton.addActionListener(e -> );
-
-
-        panel.add(Box.createVerticalStrut(30));
+        panel.add(Box.createVerticalStrut(15));
         panel.add(title);
+        panel.add(Box.createVerticalStrut(20));
+        panel.add(closeServerButton);
+        panel.add(Box.createVerticalStrut(15));
 
-        return panel;
+        bg.add(panel);
+        return bg;
     }
-
 }
