@@ -182,6 +182,8 @@ public class SendDataViaNetwork {
 
         // 4. Tipo de señal
         dataOutputStream.writeUTF(signal.getType().toString());
+        String dateStr = (signal.getDate() != null) ? signal.getDate().toString() : "Unknown Date";
+        dataOutputStream.writeUTF(dateStr);
 
         dataOutputStream.flush();
     }
