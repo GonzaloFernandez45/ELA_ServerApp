@@ -159,6 +159,11 @@ public class ServerControl {
                         patientSeeDoctorFeedback(patient);
                         break;
 
+                    case 4:
+                        System.out.println("Option 4: Change patient data");
+                        updatePatientData();
+                        break;
+
                     case 0:
                         System.out.println("Client disconnected (Option 0)");
                         patientMenu = false;
@@ -398,10 +403,7 @@ public class ServerControl {
                         System.out.println("SELECTED: View recorded signal");
                         doctorViewSignals();
                         break;
-                    case 4:
-                        System.out.println("SELECTED: Change patient data");
-                        updatePatientData();
-                        break;
+
                     case 0:
                         System.out.println("0. Exit");
                         doctorMenu = false;
