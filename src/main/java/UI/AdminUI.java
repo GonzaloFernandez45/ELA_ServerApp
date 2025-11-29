@@ -185,4 +185,50 @@ public class AdminUI {
         String response = receiveDataViaNetwork.receiveString(); // "SUCCESS" o "ERROR"
         return response.equals("SUCCESS");
     }
+
+    // Añade este método en tu clase AdminUI
+
+    // En AdminUI.java
+
+    public void stopServerOption(SendDataViaNetwork sendData, ReceiveDataViaNetwork receiveData) throws IOException {
+        // 1. Recibir primer mensaje (puede ser WARNING o PASSWORD_REQUIRED)
+        String serverResponse = receiveData.receiveString();
+
+        // 2. Caso WARNING
+        if (serverResponse.startsWith("WARNING")) {
+            System.out.println("SERVER: " + serverResponse);
+
+            // Leemos lo que escribes (fghj, sdg... hasta que des enter)
+            String confirm = Utilities.readString("Type 'yes' to force shutdown: ");
+            sendData.sendStrings(confirm);
+
+            // Esperamos la siguiente respuesta del servidor
+            // Puede ser "Shutdown cancelled..." o "PASSWORD_REQUIRED"
+            serverResponse = receiveData.receiveString();
+
+            // Si el servidor dice que se canceló, imprimimos y salimos
+            if (serverResponse.contains("cancelled")) {
+                System.out.println("SERVER: " + serverResponse);
+                return;
+            }
+        }
+
+        // 3. Caso CONTRASEÑA (PASSWORD_REQUIRED)
+        // Llegamos aquí si no hubo warning O si dijimos "yes" al warning
+        if (serverResponse.equals("PASSWORD_REQUIRED")) {
+            String pass = Utilities.readString("Enter admin password to shut down: ");
+            sendData.sendStrings(pass);
+
+            String result = receiveData.receiveString();
+            if (result.equals("SHUTDOWN_OK")) {
+                System.out.println("Server shutting down successfully. Closing Admin App.");
+                System.exit(0);
+            } else {
+                System.out.println("Error: " + result);
+            }
+        } else {
+            // Por si acaso llega otra cosa inesperada
+            System.out.println("Server message: " + serverResponse);
+        }
+    }
 }

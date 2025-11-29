@@ -443,55 +443,59 @@ public class ServerControl {
 
     public void selectAndUpdateFeedback() throws IOException {
 
-        // Paso 1: Recibir el patientId del médico
+        // 1. Recibir ID del paciente
         int patientId = receiveDataViaNetwork.receiveInt();
 
-        // Paso 2: Obtener todos los registros de medical_information para el paciente
+        // 2. Obtener lista de la base de datos
         List<MedicalInformation> medicalInfoList = medicalInformationManager.getMedicalInfoByPatientId(patientId);
 
-        // Paso 3: Comprobar si hay registros médicos
+        // 3. Comprobar si está vacía
         if (medicalInfoList.isEmpty()) {
-            // Enviar un mensaje al doctor indicando que no hay registros médicos
             sendDataViaNetwork.sendStrings("No medical records found for this patient.");
-            return;  // Terminar la ejecución si no hay registros médicos
-        }
-
-        // Paso 4: Enviar la lista de registros médicos al doctor
-        StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
-        for (int i = 0; i < medicalInfoList.size(); i++) {
-            MedicalInformation m = medicalInfoList.get(i);
-            records.append(i + 1).append(". Date: ").append(m.getReportDate()).append(" Feedback: ").append(m.getFeedback()).append("\n");
-        }
-        sendDataViaNetwork.sendStrings(records.toString());  // Enviar los registros al doctor
-
-        // Paso 5: Recibir la selección del médico (el índice del registro)
-        int selectedIndex = receiveDataViaNetwork.receiveInt();  // El médico selecciona el registro por índice
-
-        // Paso 6: Validar la selección del registro
-        if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
-            sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
             return;
         }
 
-        // Paso 7: Obtener el registro seleccionado
-        MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);  // Ajustamos el índice para 0-based
+        // 4. Enviar lista al doctor
+        StringBuilder records = new StringBuilder("Select a record to update feedback:\n");
+        // Usamos un bucle for-i tradicional para tener control total del índice
+        for (int i = 0; i < medicalInfoList.size(); i++) {
+            MedicalInformation m = medicalInfoList.get(i);
+            // El usuario ve opciones del 1 al N
+            records.append(i + 1)
+                    .append(". Date: ").append(m.getReportDate())
+                    .append(" | Current Feedback: ").append(m.getFeedback() == null ? "None" : m.getFeedback())
+                    .append("\n");
+        }
+        sendDataViaNetwork.sendStrings(records.toString());
 
-        // Paso 8: Recibir el nuevo feedback del médico
-        String newFeedback = receiveDataViaNetwork.receiveString();
+        // 5. Recibir selección (1-based index)
+        int selectedIndex = receiveDataViaNetwork.receiveInt();
 
-        // Paso 9: Actualizar el feedback del registro seleccionado
-        boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
-
-        // Paso 10: Preparar el mensaje de respuesta
-        String responseMessage;
-        if (success) {
-            responseMessage = "Feedback updated successfully for the selected record.";
-        } else {
-            responseMessage = "Error updating feedback for the selected record.";
+        // 6. VALIDACIÓN CORREGIDA
+        // El usuario elige entre 1 y size().
+        if (selectedIndex < 1 || selectedIndex > medicalInfoList.size()) {
+            sendDataViaNetwork.sendStrings("Invalid selection. Please try again.");
+            // IMPORTANTE: Consumimos el string del feedback "fantasma" que el cliente envía justo después
+            // para no desincronizar el socket en la siguiente vuelta.
+            receiveDataViaNetwork.receiveString();
+            return;
         }
 
-        // Paso 11: Enviar la respuesta al médico
-        sendDataViaNetwork.sendStrings(responseMessage);
+        // 7. Obtener registro (convertir a 0-based index)
+        MedicalInformation selectedRecord = medicalInfoList.get(selectedIndex - 1);
+
+        // 8. Recibir nuevo feedback
+        String newFeedback = receiveDataViaNetwork.receiveString();
+
+        // 9. Actualizar en DB
+        boolean success = medicalInformationManager.updateFeedback(selectedRecord.getId(), newFeedback);
+
+        // 10. Responder
+        if (success) {
+            sendDataViaNetwork.sendStrings("Feedback updated successfully!");
+        } else {
+            sendDataViaNetwork.sendStrings("Error updating feedback in database.");
+        }
     }
 
 
@@ -812,65 +816,94 @@ private void patientSeeDoctorFeedback(Patient patient) {
 
     private void adminMenu() throws IOException {
         try {
-            boolean patientMenu = true;
-
-            while (patientMenu) {
+            boolean adminMenuLoop = true;
+            while (adminMenuLoop) {
                 int opcion = receiveDataViaNetwork.receiveInt();
 
                 if (opcion == -1) {
-                    System.out.println("Admin menu: client disconnected (receiveInt = -1)");
-                    patientMenu = false;
+                    adminMenuLoop = false;
                     break;
                 }
 
                 switch (opcion) {
-                    case 1:
-                        System.out.println("Administrator log in");
+                    case 1: // Log In
                         logInAdmin();
                         break;
-                    case 2:
-                        System.out.println("Administrator register");
+                    case 2: // Register
                         adminRegister();
                         break;
-                    case 3:
-                        patientMenu = false;
-                        System.out.println("Administrator disconnected");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
+                    case 3: // Exit
+                        adminMenuLoop = false;
                         break;
                 }
             }
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
+            // Error handling
         }
     }
 
+    // Este es el menú CUANDO YA ESTÁ LOGUEADO
     private void menuAdmin(Administrator administrator) throws IOException {
         try {
-            boolean adminMenu= true;
-
-            while (adminMenu) {
+            boolean menuLoop = true;
+            while (menuLoop) {
                 int opcion = receiveDataViaNetwork.receiveInt();
                 switch (opcion) {
-                    case 1:
-                        System.out.println("Close Server");
+                    case 1: // STOP SERVER
+                        System.out.println("Admin requested shutdown.");
+                        handleShutdownRequest();
+                        // Si se apaga el servidor, salimos del bucle
+                        if (!Server.activeClients.equals(new java.util.concurrent.atomic.AtomicInteger(0))) {
+                            // Nota: Como el socket se cerrará, esto lanzará excepción y saldrá solo
+                        }
                         break;
-                    case 0:
-                        System.out.println("0. Exit");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
+
+                    case 0: // Exit
+                        menuLoop = false;
                         break;
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
+            // Ignoramos errores de cierre si estamos apagando
+        }
+    }
+
+    private void handleShutdownRequest() throws IOException {
+        // 1. Contamos clientes
+        int currentClients = Server.activeClients.get();
+
+        // Si hay más de 1 cliente (el admin cuenta como 1), pedimos confirmación extra
+        if (currentClients > 1) {
+            sendDataViaNetwork.sendStrings("WARNING: There are " + (currentClients - 1) + " other clients connected. Force stop? (yes/no)");
+
+            // --- CORRECCIÓN AQUÍ: EL SERVIDOR DEBE ESPERAR TU RESPUESTA ---
+            String confirmation = receiveDataViaNetwork.receiveString();
+
+            if (!confirmation.equalsIgnoreCase("yes")) {
+                sendDataViaNetwork.sendStrings("Shutdown cancelled by admin.");
+                return; // Si no es "yes", salimos.
+            }
+            // Si es "yes", NO hacemos return, seguimos abajo para pedir la contraseña
         }
 
+        // 2. Pedir contraseña (Llegamos aquí si no hay clientes O si dijiste "yes")
+        sendDataViaNetwork.sendStrings("PASSWORD_REQUIRED");
 
+        String password = receiveDataViaNetwork.receiveString();
+
+        // 3. Verificar contraseña
+        if (Server.SHUTDOWN_PASSWORD.equals(password)) {
+            sendDataViaNetwork.sendStrings("SHUTDOWN_OK");
+            System.out.println("Password correct. Stopping server...");
+
+            try { Thread.sleep(500); } catch (InterruptedException e) {}
+
+            Server.stopServer();
+            System.exit(0);
+        } else {
+            sendDataViaNetwork.sendStrings("WRONG_PASSWORD");
+            System.out.println("Shutdown failed: Wrong password.");
+        }
     }
 
 
