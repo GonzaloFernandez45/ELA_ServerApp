@@ -189,45 +189,6 @@ public class ReceiveDataViaNetwork {
         return medicalInformation;
     }
 
-    public List<MedicalInformation> receiveMedicalInformationList() {
-        List<MedicalInformation> medicalInformationList = null;
-        MedicalInformation medicalInformation = null;
-        try {
-            int size = dataInputStream.readInt();
-            for (int i = 0; i < size; i++) {
-
-                int id = dataInputStream.readInt();  // Recibe el ID de la información médica
-                Date reportDate = Date.valueOf(dataInputStream.readUTF());// Recibe la fecha del informe
-                int medicationSize = dataInputStream.readInt();
-                List<String> medicationList = null;
-                for (int j = 0; j < medicationSize; j++) {
-                    String med = dataInputStream.readUTF();
-                    medicationList.add(med);
-                }
-                int symptomsCount = dataInputStream.readInt();  // Número de síntomas
-                List<Symptom> symptoms = new ArrayList<>();
-                for (int j = 0; j < symptomsCount; j++) {
-                    Symptom symptom = null;
-                    int symptomId = dataInputStream.readInt();  // ID del síntoma
-                    String description = dataInputStream.readUTF();
-                    symptom.setId(symptomId);
-                    symptom.setDescription(description);
-                    symptoms.add(symptom);
-                }
-                String feedback = dataInputStream.readUTF();  // Retroalimentación
-
-                // Crea la instancia de MedicalInformation con todos los datos
-                medicalInformation = new MedicalInformation(id,symptoms,reportDate,medicationList,feedback);
-                medicalInformationList.add(medicalInformation);
-            }
-        } catch (IOException ex) {
-            System.err.println("Error receiving medical information: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-        return medicalInformationList;
-    }
-
-
     public Signal receiveSignal() throws IOException {
         Signal signal = null;
 
