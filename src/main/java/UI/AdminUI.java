@@ -3,6 +3,7 @@ package UI;
 import ReceiveData.ReceiveDataViaNetwork;
 import ReceiveData.SendDataViaNetwork;
 import pojos.Administrator;
+import pojos.Doctor;
 import pojos.Role;
 import pojos.User;
 
@@ -128,4 +129,60 @@ public class AdminUI {
         }
     }
 
+    public boolean logInFromGUI(
+            String username,
+            String password,
+            Socket socket,
+            SendDataViaNetwork sendDataViaNetwork,
+            ReceiveDataViaNetwork receiveDataViaNetwork) throws IOException {
+
+        sendDataViaNetwork.sendInt(1); // login
+
+        // mensaje inicial del servidor, lo leemos y lo ignoramos o mostramos en consola
+        String serverMsg = receiveDataViaNetwork.receiveString();
+        System.out.println("Server says: " + serverMsg);
+
+        byte[] passwordBytes = password.getBytes();
+        Role role = new Role("Administrator");
+        User user = new User(username, passwordBytes, role);
+
+        sendDataViaNetwork.sendStrings("OK");
+        sendDataViaNetwork.sendUser(user);
+
+        String response = receiveDataViaNetwork.receiveString(); // "SUCCESS" o "ERROR"
+        if (!response.equals("SUCCESS")) {
+            return false;
+        }
+
+        Administrator administrator = receiveDataViaNetwork.recieveAdmin();
+        System.out.println("Admin logged in: " + administrator);
+        return administrator != null;
+    }
+
+    public boolean registerFromGUI(
+            String email,
+            String dni,
+            String password,
+            Socket socket,
+            SendDataViaNetwork sendDataViaNetwork,
+            ReceiveDataViaNetwork receiveDataViaNetwork) throws IOException {
+
+        sendDataViaNetwork.sendInt(2); // registrar doctor
+
+        Administrator administrator = new Administrator();
+
+        administrator.setEmail(email);
+        administrator.setDni(dni);
+
+        byte[] passwordBytes = password.getBytes();
+        Role role = new Role("Administrator");
+        User user = new User(email, passwordBytes, role);
+
+        sendDataViaNetwork.sendStrings("OK");
+        sendDataViaNetwork.sendAdmin(administrator);
+        sendDataViaNetwork.sendUser(user);
+
+        String response = receiveDataViaNetwork.receiveString(); // "SUCCESS" o "ERROR"
+        return response.equals("SUCCESS");
+    }
 }

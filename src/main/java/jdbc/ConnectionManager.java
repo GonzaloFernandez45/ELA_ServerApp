@@ -128,6 +128,7 @@ public class ConnectionManager {
                     + "role TEXT NOT NULL,"
                     + "patient_id INTEGER,"
                     + "doctor_id INTEGER,"
+                    + "admin_id INTEGER"
                     + "FOREIGN KEY (patient_id) REFERENCES patient(id)),"
                     + "FOREIGN KEY (doctor_id) REFERENCES doctor(id)),"
                     + "FOREIGN KEY (admin_id) REFERENCES administrator(id))";
