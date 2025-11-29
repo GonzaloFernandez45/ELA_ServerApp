@@ -151,7 +151,7 @@ public class ServerControl {
 
                     case 2:
                         System.out.println("Option 2: Receiving Signal...");
-                        patientReceiveAndSaveSignal(patient);
+                        patientReceiveAndSaveSignal(patient,receiveDataViaNetwork,sendDataViaNetwork);
                         break;
 
                     case 3:
@@ -827,35 +827,31 @@ public class ServerControl {
 
 
 
-    private void patientReceiveAndSaveSignal(Patient patient) {
+    private static void patientReceiveAndSaveSignal(Patient patient, ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) {
         ConnectionManager conMan = null;
         try {
-            Signal signal = receiveDataViaNetwork.receiveSignal();
+            Signal signal = receiveData.receiveSignal();
 
             if (signal != null) {
                 signal.setClientId(patient.getId());
 
-                // 1. Guardar archivo de texto (.txt)
-                String generatedFileName = saveSignalToFile(signal, patient);
+                // --- YA NO GUARDAMOS ARCHIVO FÍSICO NI GENERAMOS GRÁFICA EN SERVIDOR ---
+                // String generatedFileName = saveSignalToFile(signal, patient); // BORRAR
+                // generateSignalGraph(signal, generatedFileName); // BORRAR OPCIONAL
 
-                // --- NUEVO: 2. Generar imagen gráfica (.png) ---
-                generateSignalGraph(signal, generatedFileName);
-                // ----------------------------------------------
-
-                // 3. Guardar en Base de Datos (usando el nombre del txt o ambos)
                 conMan = new ConnectionManager();
                 JDBCSignalManager signalManager = new JDBCSignalManager(conMan);
 
-                Date date = new Date(System.currentTimeMillis());
+                java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
 
-                // En la BBDD guardamos el nombre base. El doctor sabrá que existen .txt y .png
-                signalManager.addSignal(signal, generatedFileName, date);
+                // Pasamos "DB" como nombre de archivo porque ya no importa, los datos van dentro
+                signalManager.addSignal(signal, "STORED_IN_DB", date);
 
-                System.out.println("Signal saved in DB, TXT and PNG.");
-                sendDataViaNetwork.sendStrings("OK");
+                System.out.println("Signal saved in DB successfully.");
+                sendData.sendStrings("OK");
 
             } else {
-                sendDataViaNetwork.sendStrings("ERROR");
+                sendData.sendStrings("ERROR");
             }
 
         } catch (IOException e) {

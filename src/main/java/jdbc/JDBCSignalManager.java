@@ -14,72 +14,76 @@ import java.io.IOException;
 
 public class JDBCSignalManager implements SignalManager {
 
-        private Connection c;
+    private Connection c;
 
-        public JDBCSignalManager(ConnectionManager conMan) {
-            this.c = conMan.getConnection();
+    public JDBCSignalManager(ConnectionManager conMan) {
+        this.c = conMan.getConnection();
+    }
+
+    @Override
+    public void addSignal(Signal signal, String fileName, Date date) {
+        try {
+            // Guardamos los valores en la columna signal_values
+            String sql = "INSERT INTO signal (patient_id, type, record_date, signal_values) VALUES (?, ?, ?, ?)";
+            PreparedStatement p = c.prepareStatement(sql);
+
+            p.setInt(1, signal.getClientId());
+            p.setString(2, signal.getType().toString());
+            p.setLong(3, date.getTime()); // Guardamos fecha como Long
+
+            // CONVERSIÓN: Lista de Enteros -> String "123 456 789"
+            String valuesString = signal.getValues().toString()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replace(",", ""); // Quitamos comas, dejamos espacios
+
+            p.setString(4, valuesString);
+
+            p.executeUpdate();
+            p.close();
+        } catch (SQLException e) {
+            System.out.println("Error saving signal into database");
+            e.printStackTrace();
         }
+    }
 
-        @Override
-        public void addSignal(Signal signal, String fileName, Date date) {
-            try {
-                String sql = "INSERT INTO signal (patient_id, type, record_date, filename) VALUES (?, ?, ?, ?)";
-                PreparedStatement p = c.prepareStatement(sql);
+    @Override
+    public List<Signal> listSignalsByPatientId(int patientId) {
+        List<Signal> signals = new ArrayList<>();
+        try {
+            String sql = "SELECT * FROM signal WHERE patient_id = ?";
+            PreparedStatement p = c.prepareStatement(sql);
+            p.setInt(1, patientId);
+            ResultSet rs = p.executeQuery();
 
-                p.setInt(1, signal.getClientId()); // patient_id
-                p.setString(2, signal.getType().toString()); // EMG o ACC
-                p.setDate(3, date);
-                p.setString(4, fileName); // El nombre del archivo .txt
+            while (rs.next()) {
+                String typeStr = rs.getString("type");
+                TypeSignal type = TypeSignal.valueOf(typeStr);
+                int clientId = rs.getInt("patient_id");
 
-                p.executeUpdate();
-                p.close();
-            } catch (SQLException e) {
-                System.out.println("Error saving signal into database");
-                e.printStackTrace();
+                // Recuperar fecha
+                long dateMillis = rs.getLong("record_date");
+                Date date = new Date(dateMillis);
+
+                Signal s = new Signal(type, clientId);
+                s.setRecordId(rs.getInt("id"));
+                s.setDate(date);
+                // No cargamos los valores aquí para no saturar la lista, solo metadatos
+
+                signals.add(s);
             }
+            rs.close();
+            p.close();
+        } catch (SQLException e) {
+            System.out.println("Error getting signals");
+            e.printStackTrace();
         }
-
-        @Override
-        public List<Signal> listSignalsByPatientId(int patientId) {
-            List<Signal> signals = new ArrayList<>();
-            try {
-                String sql = "SELECT * FROM signal WHERE patient_id = ?";
-                PreparedStatement p = c.prepareStatement(sql);
-                p.setInt(1, patientId);
-                ResultSet rs = p.executeQuery();
-
-                while (rs.next()) {
-                    // Recuperamos el tipo (String -> Enum)
-                    String typeStr = rs.getString("type");
-                    TypeSignal type = TypeSignal.valueOf(typeStr);
-
-                    int clientId = rs.getInt("patient_id");
-                    long dateMillis = rs.getLong("record_date");
-                    Date date = new Date(dateMillis);
-
-                    // Creamos la señal (sin valores, solo metadatos)
-                    Signal s = new Signal(type, clientId);
-                    s.setRecordId(rs.getInt("id")); // ID de la BBDD
-                    s.setRecordId(rs.getInt("id"));
-                    s.setDate(date);
-
-                    signals.add(s);
-                }
-                rs.close();
-                p.close();
-            } catch (SQLException e) {
-                System.out.println("Error getting signals");
-                e.printStackTrace();
-            }
-            return signals;
-        }
+        return signals;
+    }
 
     @Override
     public Signal getSignalWithValues(int signalId) {
         Signal signal = null;
-        String fileName = null;
-
-        // 1. Obtener metadatos de la BBDD
         try {
             String sql = "SELECT * FROM signal WHERE id = ?";
             PreparedStatement p = c.prepareStatement(sql);
@@ -87,59 +91,35 @@ public class JDBCSignalManager implements SignalManager {
             ResultSet rs = p.executeQuery();
 
             if (rs.next()) {
-                String typeStr = rs.getString("type");
-                TypeSignal type = TypeSignal.valueOf(typeStr);
-                int clientId = rs.getInt("patient_id");
-                long dateMillis = rs.getLong("record_date");
-                Date date = new Date(dateMillis);
-                fileName = rs.getString("filename");
-
                 signal = new Signal();
                 signal.setRecordId(signalId);
-                signal.setType(type);
-                signal.setClientId(clientId);
-                signal.setDate(date);
-                signal.setSignalFilename(fileName);
+                signal.setType(TypeSignal.valueOf(rs.getString("type")));
+                signal.setClientId(rs.getInt("patient_id"));
+                signal.setDate(new Date(rs.getLong("record_date")));
+
+                // CONVERSIÓN INVERSA: String "123 456" -> Lista de Enteros
+                String valuesBlob = rs.getString("signal_values");
+
+                if (valuesBlob != null && !valuesBlob.trim().isEmpty()) {
+                    // Separamos por espacios (el delimitador por defecto del toString)
+                    String[] tokens = valuesBlob.trim().split("\\s+");
+                    for (String token : tokens) {
+                        try {
+                            signal.addSample(Integer.parseInt(token));
+                        } catch (NumberFormatException e) {
+                            // Ignoramos basura si la hubiera
+                        }
+                    }
+                }
+                // Ponemos un nombre ficticio para que el Doctor pueda generar el PNG
+                signal.setSignalFilename("Signal_" + signal.getRecordId() + ".txt");
             }
             rs.close();
             p.close();
-
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
         }
-
-        // 2. Leer los valores del archivo físico
-        if (fileName != null) {
-            File file = new File("ServerSignals/" + fileName); // Asegúrate de que la ruta coincide con donde guardas
-
-            if (file.exists()) {
-                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                    String line;
-                    boolean isDataSection = false;
-
-                    while ((line = br.readLine()) != null) {
-                        if (line.contains("BEGIN DATA")) {
-                            isDataSection = true;
-                            continue;
-                        }
-
-                        if (isDataSection) {
-                            try {
-                                int val = Integer.parseInt(line.trim());
-                                signal.addSample(val);
-                            } catch (NumberFormatException ignored) {}
-                        }
-                    }
-                } catch (IOException e) {
-                    System.out.println("Error reading signal file: " + fileName);
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("File not found: " + fileName);
-            }
-        }
-
         return signal;
     }
 }
+

@@ -189,7 +189,7 @@ public class ConnectionManager {
                     + "patient_id INTEGER,"
                     + "type TEXT,"
                     + "record_date TEXT,"
-                    + "filename TEXT,"
+                    + "signal_values TEXT,"
                     + "FOREIGN KEY (patient_id) REFERENCES patient(id))";
             createTables8.executeUpdate(create8);
             createTables8.close();
