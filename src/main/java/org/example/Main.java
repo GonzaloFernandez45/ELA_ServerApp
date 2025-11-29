@@ -694,6 +694,7 @@ public class Main {
 
     }
 
+
     private static void adminRegister(ReceiveDataViaNetwork recieveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket, AdministratorManager adminManager, UserManager userManager) throws IOException {
         try {
             String message = recieveDataViaNetwork.receiveString();
