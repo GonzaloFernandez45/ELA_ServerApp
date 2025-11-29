@@ -816,65 +816,94 @@ private void patientSeeDoctorFeedback(Patient patient) {
 
     private void adminMenu() throws IOException {
         try {
-            boolean patientMenu = true;
-
-            while (patientMenu) {
+            boolean adminMenuLoop = true;
+            while (adminMenuLoop) {
                 int opcion = receiveDataViaNetwork.receiveInt();
 
                 if (opcion == -1) {
-                    System.out.println("Admin menu: client disconnected (receiveInt = -1)");
-                    patientMenu = false;
+                    adminMenuLoop = false;
                     break;
                 }
 
                 switch (opcion) {
-                    case 1:
-                        System.out.println("Administrator log in");
+                    case 1: // Log In
                         logInAdmin();
                         break;
-                    case 2:
-                        System.out.println("Administrator register");
+                    case 2: // Register
                         adminRegister();
                         break;
-                    case 3:
-                        patientMenu = false;
-                        System.out.println("Administrator disconnected");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
+                    case 3: // Exit
+                        adminMenuLoop = false;
                         break;
                 }
             }
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
-            releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
+            // Error handling
         }
     }
 
+    // Este es el menú CUANDO YA ESTÁ LOGUEADO
     private void menuAdmin(Administrator administrator) throws IOException {
         try {
-            boolean adminMenu= true;
-
-            while (adminMenu) {
+            boolean menuLoop = true;
+            while (menuLoop) {
                 int opcion = receiveDataViaNetwork.receiveInt();
                 switch (opcion) {
-                    case 1:
-                        System.out.println("Close Server");
+                    case 1: // STOP SERVER
+                        System.out.println("Admin requested shutdown.");
+                        handleShutdownRequest();
+                        // Si se apaga el servidor, salimos del bucle
+                        if (!Server.activeClients.equals(new java.util.concurrent.atomic.AtomicInteger(0))) {
+                            // Nota: Como el socket se cerrará, esto lanzará excepción y saldrá solo
+                        }
                         break;
-                    case 0:
-                        System.out.println("0. Exit");
-                        break;
-                    default:
-                        System.out.println("Invalid option");
+
+                    case 0: // Exit
+                        menuLoop = false;
                         break;
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            releaseResources(receiveDataViaNetwork, sendDataViaNetwork, socket);
+            // Ignoramos errores de cierre si estamos apagando
+        }
+    }
+
+    private void handleShutdownRequest() throws IOException {
+        // 1. Contamos clientes
+        int currentClients = Server.activeClients.get();
+
+        // Si hay más de 1 cliente (el admin cuenta como 1), pedimos confirmación extra
+        if (currentClients > 1) {
+            sendDataViaNetwork.sendStrings("WARNING: There are " + (currentClients - 1) + " other clients connected. Force stop? (yes/no)");
+
+            // --- CORRECCIÓN AQUÍ: EL SERVIDOR DEBE ESPERAR TU RESPUESTA ---
+            String confirmation = receiveDataViaNetwork.receiveString();
+
+            if (!confirmation.equalsIgnoreCase("yes")) {
+                sendDataViaNetwork.sendStrings("Shutdown cancelled by admin.");
+                return; // Si no es "yes", salimos.
+            }
+            // Si es "yes", NO hacemos return, seguimos abajo para pedir la contraseña
         }
 
+        // 2. Pedir contraseña (Llegamos aquí si no hay clientes O si dijiste "yes")
+        sendDataViaNetwork.sendStrings("PASSWORD_REQUIRED");
 
+        String password = receiveDataViaNetwork.receiveString();
+
+        // 3. Verificar contraseña
+        if (Server.SHUTDOWN_PASSWORD.equals(password)) {
+            sendDataViaNetwork.sendStrings("SHUTDOWN_OK");
+            System.out.println("Password correct. Stopping server...");
+
+            try { Thread.sleep(500); } catch (InterruptedException e) {}
+
+            Server.stopServer();
+            System.exit(0);
+        } else {
+            sendDataViaNetwork.sendStrings("WRONG_PASSWORD");
+            System.out.println("Shutdown failed: Wrong password.");
+        }
     }
 
 

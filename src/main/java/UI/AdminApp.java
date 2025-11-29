@@ -75,31 +75,33 @@ public class AdminApp {
         }
     }
 
-    public static void menuAdmin(ReceiveDataViaNetwork receiveDataViaNetwork,SendDataViaNetwork sendDataViaNetwork, Socket socket) throws IOException {
+    // En AdminApp.java -> menuAdmin
+
+    public static void menuAdmin(ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, Socket socket) throws IOException {
         boolean running = true;
-        Scanner scanner = new Scanner(System.in);
-        AdminUI adminUi= new AdminUI();
+        // Scanner scanner = new Scanner(System.in); // MEJOR USA UTILITIES SI YA LA TIENES
+        AdminUI adminUi = new AdminUI();
+
         while(running) {
-            System.out.println("Welcome to the Admin App!");
-            System.out.println("Please choose an option");
-            System.out.println("1.Stop the Server");
-            System.out.println("0.Exit");
-            int option = scanner.nextInt();
+            System.out.println("\n--- ADMIN MENU ---");
+            System.out.println("1. Stop the Server");
+            System.out.println("0. Exit");
+
+            int option = Utilities.readInteger("Choose option: ");
             sendDataViaNetwork.sendInt(option);
 
             switch(option) {
                 case 1:
-                    System.out.println("This should stop the server");
+                    adminUi.stopServerOption(sendDataViaNetwork, receiveDataViaNetwork);
                     break;
+
                 case 0:
                     running = false;
                     break;
+
                 default:
                     System.out.println("Invalid option, try again.");
-
             }
-
         }
-
     }
 }

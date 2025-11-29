@@ -1,13 +1,9 @@
 package ReceiveData;
 
-import ReceiveData.ReceiveDataViaNetwork;
-import ReceiveData.SendDataViaNetwork;
-import ReceiveData.ServerControl;
 import jdbc.*;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class ClientHandler implements Runnable {
 
@@ -35,38 +31,34 @@ public class ClientHandler implements Runnable {
 
             receiveData = new ReceiveDataViaNetwork(socket);
             sendData = new SendDataViaNetwork(socket);
-            System.out.println("Socket accepted in handler: " + socket.getRemoteSocketAddress());
 
             ServerControl controller = new ServerControl(
-                    socket,
-                    receiveData,
-                    sendData,
-                    patientManager,
-                    userManager,
-                    symptomManager,
-                    medicalInformationManager,
-                    doctorManager,
-                    administratorManager
+                    socket, receiveData, sendData, patientManager, userManager,
+                    symptomManager, medicalInformationManager, doctorManager, administratorManager
             );
 
             controller.handleFirstMessage();
 
         } catch (IOException e) {
-            Logger.getLogger(ClientHandler.class.getName())
-                    .log(Level.SEVERE, "Error handling client", e);
+
         } finally {
+
+            int remaining = Server.activeClients.decrementAndGet();
+            System.out.println("Client disconnected. Remaining clients: " + remaining);
+
             try {
-                if (receiveData != null && sendData != null) {
-                    sendData.releaseResources();
-                    receiveData.releaseResources();
-                }
+                if (receiveData != null) receiveData.releaseResources();
+                if (sendData != null) sendData.releaseResources();
+
                 if (socket != null && !socket.isClosed()) {
                     socket.close();
                 }
-            } catch (IOException ex) {
+                if (connectionManager != null) {
+                    connectionManager.close();
+                }
+            } catch (Exception ex) {
                 System.out.println("Error releasing resources: " + ex.getMessage());
             }
-            System.out.println("Client disconnected: " + socket);
         }
     }
 }
