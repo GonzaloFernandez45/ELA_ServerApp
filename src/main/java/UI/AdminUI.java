@@ -8,6 +8,8 @@ import pojos.Role;
 import pojos.User;
 
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.net.Socket;
 import java.sql.Date;
@@ -231,4 +233,108 @@ public class AdminUI {
             System.out.println("Server message: " + serverResponse);
         }
     }
+    public void stopServerOptionGUI(SendDataViaNetwork sendData,
+                                    ReceiveDataViaNetwork receiveData,
+                                    Component parent) {
+        try {
+            // 1. Recibir primer mensaje (WARNING / PASSWORD_REQUIRED / lo que sea)
+            String serverResponse = receiveData.receiveString();
+
+            // 2. Caso WARNING
+            if (serverResponse.startsWith("WARNING")) {
+
+                int choice = JOptionPane.showConfirmDialog(
+                        parent,
+                        serverResponse + "\n\nDo you really want to force shutdown?",
+                        "Server warning",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                );
+
+                String confirm = (choice == JOptionPane.YES_OPTION) ? "yes" : "no";
+                sendData.sendStrings(confirm);
+
+                // Esperar la siguiente respuesta del servidor
+                serverResponse = receiveData.receiveString();
+
+                // Si el servidor dice que se ha cancelado, mostramos y salimos
+                if (serverResponse.contains("Shutdown cancelled")) {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            serverResponse,
+                            "Shutdown cancelled",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    return;
+                }
+            }
+
+            // 3. Caso CONTRASEÑA
+            if (serverResponse.equals("PASSWORD_REQUIRED")) {
+
+                // Cuadro de diálogo para introducir contraseña
+                JPasswordField passField = new JPasswordField();
+                int res = JOptionPane.showConfirmDialog(
+                        parent,
+                        passField,
+                        "Enter admin password to shut down",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE
+                );
+
+                if (res != JOptionPane.OK_OPTION) {
+                    // Usuario canceló → mandamos algo vacío (o nada) y salimos
+                    sendData.sendStrings("");
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Shutdown cancelled by user.",
+                            "Cancelled",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    return;
+                }
+
+                String pass = new String(passField.getPassword());
+                sendData.sendStrings(pass);
+
+                String result = receiveData.receiveString();
+
+                if (result.equals("SHUTDOWN_OK")) {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Server shutting down successfully. Closing Admin App.",
+                            "Shutdown",
+                            JOptionPane.INFORMATION_MESSAGE
+                    );
+                    System.exit(0);
+                } else {
+                    JOptionPane.showMessageDialog(
+                            parent,
+                            "Error: " + result,
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                }
+
+            } else {
+                // Por si llega otra cosa
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Server message: " + serverResponse,
+                        "Server",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    parent,
+                    "Connection error: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
+
 }

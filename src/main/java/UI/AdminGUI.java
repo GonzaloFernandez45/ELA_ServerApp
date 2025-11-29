@@ -1,5 +1,8 @@
 package UI;
 
+import ReceiveData.ReceiveDataViaNetwork;
+import ReceiveData.SendDataViaNetwork;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
@@ -354,7 +357,7 @@ public class AdminGUI extends JFrame {
         styleMenuButton(closeServerButton);
 
         // **Pendiente** implementar acción
-        //closeServerButton.addActionListener(e -> {});
+        closeServerButton.addActionListener(e -> onStopServerButton());
 
         panel.add(Box.createVerticalStrut(15));
         panel.add(title);
@@ -365,4 +368,40 @@ public class AdminGUI extends JFrame {
         bg.add(panel);
         return bg;
     }
+    private void onStopServerButton() {
+        if (context == null) {
+            JOptionPane.showMessageDialog(this,
+                    "You are not connected to the server.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        new Thread(() -> {
+            try {
+                SendDataViaNetwork sendData = context.getSendData();
+                ReceiveDataViaNetwork receiveData = context.getReceiveData();
+
+                // 1. Enviar opción 1 al menú admin del servidor
+                sendData.sendInt(1);  // STOP SERVER
+
+                // 2. Ejecutar la lógica GUI de apagado
+                context.getAdminUI().stopServerOptionGUI(
+                        sendData,
+                        receiveData,
+                        AdminGUI.this   // parent para los JOptionPane
+                );
+
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(
+                        AdminGUI.this,
+                        "Error stopping server: " + e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE
+                ));
+            }
+        }).start();
+    }
+
+
 }
