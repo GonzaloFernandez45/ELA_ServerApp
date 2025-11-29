@@ -1,4 +1,4 @@
-package org.example;
+package ReceiveData;
 
 import ReceiveData.ReceiveDataViaNetwork;
 import ReceiveData.SendDataViaNetwork;
