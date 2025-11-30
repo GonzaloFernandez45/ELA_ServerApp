@@ -305,7 +305,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET email = ? WHERE patientId = ?";
+            String query = "UPDATE patient SET email = ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setString(1,newEmail);
@@ -352,7 +352,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET insurance= ? WHERE patientId = ?";
+            String query = "UPDATE patient SET insurance= ? WHERE id = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setInt(1,newInsurance);

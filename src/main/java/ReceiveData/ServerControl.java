@@ -632,30 +632,34 @@ public class ServerControl {
             // Retrieve all medical information for the patient
             List<MedicalInformation> medicalInfos = medicalInformationManager.getMedicalInfoByPatientId(patient.getId());
 
-            if (medicalInfos == null || medicalInfos.isEmpty()) {
-                sendDataViaNetwork.sendStrings("ERROR: No medical information found");
-                return;
+            if (medicalInfos.isEmpty()) {
+                //sendDataViaNetwork.sendStrings("ERROR: No medical information found");
+                System.out.println("ERROR: No medical information found");
+                sendDataViaNetwork.sendInt(medicalInfos.size()); //should be 0
+
+            }else{
+                //send List to Doctor
+
+
+                System.out.println("Sending medical information to doctor...");
+                sendDataViaNetwork.sendInt(medicalInfos.size());
+                // Send each medical information object to the doctor
+                for (MedicalInformation info : medicalInfos) {
+                    List<Symptom> symptoms = symptomManager.getSymptomsOfMedicalInformation(info.getId());
+                    System.out.println(symptoms);
+                    info.setSymptoms(symptoms);
+                    System.out.println(medicalInfos);
+                    sendDataViaNetwork.sendMedicalInformation(info);
+                }
+
+                String response = receiveDataViaNetwork.receiveString();
+
+                if (response != null && response.equals("RECEIVED MEDICAL INFORMATION")) {
+                    System.out.println("Doctor confirmed reception of medical information.");
+                }
             }
 
-            //send List to Doctor
 
-
-            System.out.println("Sending medical information to doctor...");
-            sendDataViaNetwork.sendInt(medicalInfos.size());
-            // Send each medical information object to the doctor
-            for (MedicalInformation info : medicalInfos) {
-                List<Symptom> symptoms = symptomManager.getSymptomsOfMedicalInformation(info.getId());
-                System.out.println(symptoms);
-                info.setSymptoms(symptoms);
-                System.out.println(medicalInfos);
-                sendDataViaNetwork.sendMedicalInformation(info);
-            }
-
-            String response = receiveDataViaNetwork.receiveString();
-
-            if (response != null && response.equals("RECEIVED MEDICAL INFORMATION")) {
-                System.out.println("Doctor confirmed reception of medical information.");
-            }
 
         } catch (Exception e) {
             e.printStackTrace();
