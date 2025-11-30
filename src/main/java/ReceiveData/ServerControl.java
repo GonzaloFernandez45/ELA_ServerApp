@@ -113,6 +113,8 @@ public class ServerControl {
                 int patient_id = patientManager.getPatientIDFromEmail(patient.getEmail()); //Obtener su ID
                 System.out.println("Patient ID from email = " + patient_id);
                 user.setPatient_id(patient_id); //Asignar la Foreign Key al usuario
+
+
                 userManager.addUser(user); //Añadir el usuario a la DB
 
                 sendDataViaNetwork.sendStrings("SUCCESS");
@@ -190,6 +192,7 @@ public class ServerControl {
 
             if (message.equals("OK")) {
                 User user = receiveDataViaNetwork.recieveUser();
+
                 boolean correctPassword = userManager.checkPassword(new String(user.getPassword()), user.getEmail());
                 if (correctPassword) {
                     sendDataViaNetwork.sendStrings("SUCCESS");
