@@ -17,10 +17,26 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+/**
+ * Console + GUI helper for ADMIN actions.
+ * Handles:
+ * - Register / login from console.
+ * - Register / login from Swing GUI.
+ * - Server shutdown protocol (console + GUI).
+ */
 public class AdminUI {
 
 
-
+    /**
+     * Console-based admin registration flow.
+     * Protocol:
+     * - Send code 2 (register admin).
+     * - Read email, dni, password from console.
+     * - Build Administrator + User and send them to server.
+     * - Wait for "SUCCESS" / other string from server.
+     * If SUCCESS → open admin menu.
+     */
     public void register(Socket socket, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork receiveDataViaNetwork) throws IOException {
 
         try {
@@ -65,6 +81,16 @@ public class AdminUI {
         }
     }
 
+    /**
+     * Console-based admin login flow.
+     * Protocol:
+     * - Send code 1 (login).
+     * - Server sends initial message (printed).
+     * - Read email + password from console.
+     * - Build User and send to server.
+     * - Read "SUCCESS" / "ERROR" / other string.
+     * If SUCCESS → receive Administrator object and open admin menu.
+     */
     public void logIn(Socket socket, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork receiveDataViaNetwork) throws IOException {
         try {
             sendDataViaNetwork.sendInt(1);
@@ -117,6 +143,9 @@ public class AdminUI {
         }
     }
 
+    /**
+     * Utility method to close network resources for console flows.
+     */
     private static void releaseResources(Socket socket, SendDataViaNetwork sendDataViaNetwork, ReceiveDataViaNetwork receiveDataViaNetwork) {
         if (sendDataViaNetwork != null && receiveDataViaNetwork != null) {
             sendDataViaNetwork.releaseResources();
@@ -131,6 +160,17 @@ public class AdminUI {
         }
     }
 
+    /**
+     * GUI login flow.
+     * Used by AdminGUI:
+     * - Sends login code (1).
+     * - Reads and prints initial server message.
+     * - Sends "OK" + User (Administrator role).
+     * - Waits for "SUCCESS".
+     * - If success → receives Administrator and returns true.
+     *
+     * @return true if login OK, false otherwise.
+     */
     public boolean logInFromGUI(
             String username,
             String password,
@@ -161,6 +201,16 @@ public class AdminUI {
         return administrator != null;
     }
 
+    /**
+     * GUI registration flow.
+     * Used by AdminGUI:
+     * - Sends code 2 (register admin).
+     * - Builds Administrator + User from GUI fields.
+     * - Sends "OK" + admin + user.
+     * - Waits for "SUCCESS" / "ERROR".
+     *
+     * @return true if registration succeeded.
+     */
     public boolean registerFromGUI(
             String email,
             String dni,
@@ -188,9 +238,16 @@ public class AdminUI {
         return response.equals("SUCCESS");
     }
 
-    // Añade este método en tu clase AdminUI
-
-    // En AdminUI.java
+    /**
+     * Console-based server shutdown flow.
+     * Protocol:
+     * - Receive first string (WARNING or PASSWORD_REQUIRED).
+     * - If WARNING: print, ask console "yes/no", send, then read next response.
+     *      - If cancelled → print and exit.
+     * - If PASSWORD_REQUIRED: ask for password, send it, read result:
+     *      - If SHUTDOWN_OK → exit application.
+     *      - Else → print error.
+     */
 
     public void stopServerOption(SendDataViaNetwork sendData, ReceiveDataViaNetwork receiveData) throws IOException {
         // 1. Recibir primer mensaje (puede ser WARNING o PASSWORD_REQUIRED)
@@ -233,6 +290,16 @@ public class AdminUI {
             System.out.println("Server message: " + serverResponse);
         }
     }
+
+    /**
+     * GUI-based server shutdown flow.
+     * Similar protocol as stopServerOption but using JOptionPane:
+     * - If WARNING: show confirm dialog (YES/NO), send "yes"/"no".
+     * - If cancelled → show info and return.
+     * - If PASSWORD_REQUIRED: show password dialog, send password, handle result.
+     * - If SHUTDOWN_OK → confirm and exit app.
+     * - Otherwise show error or generic server message.
+     */
     public void stopServerOptionGUI(SendDataViaNetwork sendData,
                                     ReceiveDataViaNetwork receiveData,
                                     Component parent) {

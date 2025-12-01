@@ -44,7 +44,6 @@ public class ServerControl {
      */
     public void handleFirstMessage() throws IOException {
         int message = receiveDataViaNetwork.receiveInt();
-        System.out.println("First message from client: " + message);
 
         if (message == 1) {
             sendDataViaNetwork.sendStrings("PATIENT");

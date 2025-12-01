@@ -7,6 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
+/**
+ * Swing GUI client for ADMIN users.
+ * Handles:
+ * - Connection screen (enter IP, connect, handshake as ADMIN).
+ * - Auth screen (login / register).
+ * - Admin menu (e.g. close server).
+ */
 public class AdminGUI extends JFrame {
 
     private AdminClientContext context;
@@ -14,15 +21,15 @@ public class AdminGUI extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
 
-    // Paneles
+    // Screens
     private JPanel connectPanel;
     private JPanel authPanel;
     private JPanel menuPanel;
 
-    // Componentes de connectPanel
+    // Connect panel components
     private JTextField ipField;
 
-    // Colores y fuentes iguales que PatientGUI
+    // Connect panel components
     private static final Color BG_COLOR = new Color(238, 244, 255);
     private static final Color CARD_COLOR = Color.WHITE;
     private static final Color BORDER_COLOR = new Color(210, 220, 240);
@@ -32,6 +39,11 @@ public class AdminGUI extends JFrame {
     private static final Font SUBTITLE_FONT = new Font("SansSerif", Font.BOLD, 20);
     private static final Font BUTTON_FONT = new Font("SansSerif", Font.PLAIN, 15);
 
+    /**
+     * Builds the main admin window:
+     * - Sets Nimbus L&F.
+     * - Creates card layout with 3 screens: CONNECT, AUTH, MENU.
+     */
     public AdminGUI() {
         super("Telemedicine - Administrator");
 
@@ -67,12 +79,18 @@ public class AdminGUI extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Launches the Admin GUI on the EDT.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(AdminGUI::new);
     }
 
     // ===== Helper UI =====
 
+    /**
+     * Applies card-like style (border + padding) to a panel.
+     */
     private void styleCard(JPanel panel) {
         panel.setBackground(CARD_COLOR);
         panel.setBorder(BorderFactory.createCompoundBorder(
@@ -81,6 +99,9 @@ public class AdminGUI extends JFrame {
         ));
     }
 
+    /**
+     * Styles a button for use in menus.
+     */
     private void styleMenuButton(JButton button) {
         button.setFont(BUTTON_FONT);
         button.setFocusPainted(false);
@@ -94,8 +115,13 @@ public class AdminGUI extends JFrame {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
-    // ===== Pantalla Conexión =====
+// ===== CONNECT screen =====
 
+    /**
+     * Creates the first screen:
+     * - IP input.
+     * - "Connect" button → attemptConnection().
+     */
     private JPanel createConnectPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
         bg.setBackground(BG_COLOR);
@@ -141,6 +167,11 @@ public class AdminGUI extends JFrame {
         return bg;
     }
 
+    /**
+     * Tries to create an AdminClientContext to the given IP.
+     * On success → show AUTH screen.
+     * On failure → show error dialog.
+     */
     private void attemptConnection() {
         String ip = ipField.getText().trim();
         if (ip.isEmpty()) {
@@ -162,7 +193,11 @@ public class AdminGUI extends JFrame {
         }
     }
 
-    // ===== Pantalla Auth =====
+// ===== AUTH screen (login / register) =====
+
+    /**
+     * Screen with buttons to log in or register as admin.
+     */
 
     private JPanel createAuthPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
@@ -198,6 +233,10 @@ public class AdminGUI extends JFrame {
         return bg;
     }
 
+    /**
+     * Modal dialog for admin login.
+     * Calls AdminUI.logInFromGUI() and if OK → go to MENU screen.
+     */
     private void showLoginForm() {
         JDialog dialog = new JDialog(this, "Log in", true);
         dialog.setLayout(new GridBagLayout());
@@ -265,6 +304,10 @@ public class AdminGUI extends JFrame {
         dialog.setVisible(true);
     }
 
+    /**
+     * Modal dialog for admin registration.
+     * Calls AdminUI.registerFromGUI(). If OK → go to MENU screen.
+     */
     private void showRegisterForm() {
         JDialog dialog = new JDialog(this, "Register", true);
         dialog.setLayout(new GridBagLayout());
@@ -339,7 +382,11 @@ public class AdminGUI extends JFrame {
         dialog.setVisible(true);
     }
 
-    // ===== Pantalla Menu =====
+    // ===== MENU screen =====
+
+    /**
+     * Creates the admin menu screen with actions (currently: close server).
+     */
 
     private JPanel createMenuPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
@@ -368,6 +415,11 @@ public class AdminGUI extends JFrame {
         bg.add(panel);
         return bg;
     }
+
+    /**
+     * Sends a "stop server" command in a background thread and
+     * delegates the protocol details to AdminUI.stopServerOptionGUI().
+     */
     private void onStopServerButton() {
         if (context == null) {
             JOptionPane.showMessageDialog(this,
@@ -382,14 +434,14 @@ public class AdminGUI extends JFrame {
                 SendDataViaNetwork sendData = context.getSendData();
                 ReceiveDataViaNetwork receiveData = context.getReceiveData();
 
-                // 1. Enviar opción 1 al menú admin del servidor
+                // 1. Send option 1 to server's admin menu (STOP SERVER)
                 sendData.sendInt(1);  // STOP SERVER
 
-                // 2. Ejecutar la lógica GUI de apagado
+                // 2. Run shutdown handshake using AdminUI helper
                 context.getAdminUI().stopServerOptionGUI(
                         sendData,
                         receiveData,
-                        AdminGUI.this   // parent para los JOptionPane
+                        AdminGUI.this   // parent for the JOptionPane
                 );
 
             } catch (Exception e) {

@@ -7,22 +7,40 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+/**
+ * Main TCP server for the telemedicine application.
+ * Listens on a port, accepts client connections and starts a ClientHandler thread for each.
+ * Can be shut down remotely via stopServer(), typically from an admin action.
+ */
 public class Server {
 
     private int port;
     private static volatile boolean running = true;
     private static ServerSocket serverSocket;
 
-    // Contador de clientes thread-safe
+    // Thread-safe counter of currently connected clients
     public static final AtomicInteger activeClients = new AtomicInteger(0);
 
-    // Contraseña para apagar el servidor
+    // Password used to authorize server shutdown (checked elsewhere)
     public static final String SHUTDOWN_PASSWORD = "admin";
 
+    /**
+     * Creates a server bound to the given port.
+     *
+     * @param port port where the server will listen for clients.
+     */
     public Server(int port) {
         this.port = port;
     }
 
+    /**
+     * Starts the server loop:
+     * - Opens the ServerSocket.
+     * - Accepts new clients while running == true.
+     * - For each connection, increments activeClients and launches a ClientHandler in a new thread.
+     * When stopServer() is called, the ServerSocket is closed and the loop exits.
+     */
     public void start() {
         System.out.println("Starting server on port " + port + "...");
 
@@ -32,9 +50,10 @@ public class Server {
 
             while (running) {
                 try {
+                    // Blocks until a client connects (unless serverSocket is closed)
                     Socket socket = serverSocket.accept();
 
-                    // Incrementamos clientes al conectar
+                    // New client connected → increment counter
                     activeClients.incrementAndGet();
                     System.out.println("New client connected. Active clients: " + activeClients.get());
 
@@ -54,16 +73,22 @@ public class Server {
         } catch (IOException e) {
             Logger.getLogger(Server.class.getName()).log(Level.SEVERE, "Error starting server", e);
         } finally {
+            // Ensure resources are released when loop finishes
             stop();
         }
     }
 
-    // Método estático para parar el servidor desde el Admin
+    /**
+     * Static method used to stop the main server loop.
+     * - Sets running = false so the accept loop ends.
+     * - Closes the ServerSocket to unblock accept().
+     * Typically invoked from an admin command.
+     */
     public static void stopServer() {
         running = false;
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close(); // Esto rompe el bloqueo de accept()
+                serverSocket.close(); // Breaks the accept() blocking call
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -71,6 +96,9 @@ public class Server {
         System.out.println("Server shutdown initiated.");
     }
 
+    /**
+     * Instance-level stop method, delegates to the static shutdown logic.
+     */
     public void stop() {
         stopServer();
     }
