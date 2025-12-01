@@ -252,6 +252,29 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
+    public boolean updatePatientDob(int patientId, Date newDob) {
+        if (newDob.equals(null)){
+            return false;
+        }
+
+        try{
+            String query = "UPDATE patient SET dob = ? WHERE id = ?";
+            PreparedStatement pstmt;
+            pstmt = c.prepareStatement(query);
+            pstmt.setDate(1,newDob);
+            pstmt.setInt(2,patientId);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        }
+        catch (SQLException e){
+            System.out.println("Error updating patient");
+            e.printStackTrace();
+            return false;
+        }
+
+
+    }
     public boolean updatePatientPhone(int id, int newPatientPhone) {
         if (newPatientPhone == 0){
             return false;
@@ -306,7 +329,7 @@ public class JDBCPatientManager implements PatientManager {
         }
 
         try{
-            String query = "UPDATE patient SET sex = ? WHERE id = ?";
+            String query = "UPDATE patient SET sex = ? WHERE patientId = ?";
             PreparedStatement pstmt;
             pstmt = c.prepareStatement(query);
             pstmt.setString(1,newSex);
