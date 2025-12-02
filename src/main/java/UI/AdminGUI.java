@@ -10,8 +10,8 @@ import java.io.IOException;
 /**
  * Swing GUI client for ADMIN users.
  * Handles:
- * - Connection screen (enter IP, connect, handshake as ADMIN).
- * - Auth screen (login / register).
+ * - Connection screen (enter IP, connect).
+ * - Auth screen (login / register with auto-reconnect).
  * - Admin menu (e.g. close server).
  */
 public class AdminGUI extends JFrame {
@@ -29,7 +29,7 @@ public class AdminGUI extends JFrame {
     // Connect panel components
     private JTextField ipField;
 
-    // Connect panel components
+    // Styles
     private static final Color BG_COLOR = new Color(238, 244, 255);
     private static final Color CARD_COLOR = Color.WHITE;
     private static final Color BORDER_COLOR = new Color(210, 220, 240);
@@ -39,11 +39,6 @@ public class AdminGUI extends JFrame {
     private static final Font SUBTITLE_FONT = new Font("SansSerif", Font.BOLD, 20);
     private static final Font BUTTON_FONT = new Font("SansSerif", Font.PLAIN, 15);
 
-    /**
-     * Builds the main admin window:
-     * - Sets Nimbus L&F.
-     * - Creates card layout with 3 screens: CONNECT, AUTH, MENU.
-     */
     public AdminGUI() {
         super("Telemedicine - Administrator");
 
@@ -79,18 +74,12 @@ public class AdminGUI extends JFrame {
         setVisible(true);
     }
 
-    /**
-     * Launches the Admin GUI on the EDT.
-     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(AdminGUI::new);
     }
 
-    // ===== Helper UI =====
+    // ===================== Helper UI =====================
 
-    /**
-     * Applies card-like style (border + padding) to a panel.
-     */
     private void styleCard(JPanel panel) {
         panel.setBackground(CARD_COLOR);
         panel.setBorder(BorderFactory.createCompoundBorder(
@@ -99,9 +88,6 @@ public class AdminGUI extends JFrame {
         ));
     }
 
-    /**
-     * Styles a button for use in menus.
-     */
     private void styleMenuButton(JButton button) {
         button.setFont(BUTTON_FONT);
         button.setFocusPainted(false);
@@ -115,13 +101,8 @@ public class AdminGUI extends JFrame {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
-// ===== CONNECT screen =====
+    // ===================== CONNECT SCREEN =====================
 
-    /**
-     * Creates the first screen:
-     * - IP input.
-     * - "Connect" button → attemptConnection().
-     */
     private JPanel createConnectPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
         bg.setBackground(BG_COLOR);
@@ -167,11 +148,6 @@ public class AdminGUI extends JFrame {
         return bg;
     }
 
-    /**
-     * Tries to create an AdminClientContext to the given IP.
-     * On success → show AUTH screen.
-     * On failure → show error dialog.
-     */
     private void attemptConnection() {
         String ip = ipField.getText().trim();
         if (ip.isEmpty()) {
@@ -180,6 +156,7 @@ public class AdminGUI extends JFrame {
         }
 
         try {
+            // Asegúrate que el puerto coincida con tu servidor (ej. 8888 o 9000)
             this.context = new AdminClientContext(ip, 8888);
             JOptionPane.showMessageDialog(this, "Connected successfully!");
             cardLayout.show(mainPanel, "AUTH");
@@ -193,11 +170,7 @@ public class AdminGUI extends JFrame {
         }
     }
 
-// ===== AUTH screen (login / register) =====
-
-    /**
-     * Screen with buttons to log in or register as admin.
-     */
+    // ===================== AUTH SCREEN =====================
 
     private JPanel createAuthPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
@@ -234,18 +207,16 @@ public class AdminGUI extends JFrame {
     }
 
     /**
-     * Modal dialog for admin login.
-     * Calls AdminUI.logInFromGUI() and if OK → go to MENU screen.
+     * Muestra formulario de Login con HILO (Thread) para no congelar la UI.
      */
-
-
     private void showLoginForm() {
-        JDialog dialog = new JDialog(this, "Log in Admin", true);
+        JDialog dialog = new JDialog(this, "Log in", true);
         dialog.setLayout(new GridBagLayout());
         dialog.getContentPane().setBackground(CARD_COLOR);
 
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(CARD_COLOR);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(4,8,4,8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -260,11 +231,14 @@ public class AdminGUI extends JFrame {
         gbc.gridx=1; content.add(passwordField, gbc);
 
         JButton loginBtn = new JButton("Log in");
-        // Tus estilos de botón de Admin
-        loginBtn.setBackground(new Color(70, 130, 180));
+        loginBtn.setBackground(BLUE_BUTTON);
         loginBtn.setForeground(Color.WHITE);
+        loginBtn.setFont(BUTTON_FONT);
+        loginBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        loginBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy=2; gbc.gridx=0; gbc.gridwidth=2;
+        gbc.gridy=2; gbc.gridx=0;
+        gbc.gridwidth=2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(loginBtn, gbc);
 
@@ -272,9 +246,11 @@ public class AdminGUI extends JFrame {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
 
+            // 1. Bloquear botón
             loginBtn.setEnabled(false);
             loginBtn.setText("Connecting...");
 
+            // 2. Hilo secundario
             new Thread(() -> {
                 try {
                     boolean ok = context.getAdminUI().logInFromGUI(
@@ -285,6 +261,7 @@ public class AdminGUI extends JFrame {
                             context.getReceiveData()
                     );
 
+                    // 3. Volver a UI
                     SwingUtilities.invokeLater(() -> {
                         loginBtn.setEnabled(true);
                         loginBtn.setText("Log in");
@@ -292,9 +269,12 @@ public class AdminGUI extends JFrame {
                         if (ok) {
                             JOptionPane.showMessageDialog(dialog, "Login successful");
                             dialog.dispose();
-                            cardLayout.show(mainPanel, "MENU"); // Pantalla del Admin
+                            cardLayout.show(mainPanel, "MENU");
                         } else {
-                            JOptionPane.showMessageDialog(dialog, "Incorrect user or password", "Login error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Incorrect user or password",
+                                    "Login error",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
                     });
                 } catch (IOException ex) {
@@ -304,7 +284,7 @@ public class AdminGUI extends JFrame {
                         JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
                     });
                 }
-            }).start();
+            }).start(); // IMPORTANTE: Iniciar hilo
         });
 
         dialog.getContentPane().add(content);
@@ -314,17 +294,16 @@ public class AdminGUI extends JFrame {
     }
 
     /**
-     * Modal dialog for admin registration.
-     * Calls AdminUI.registerFromGUI(). If OK → go to MENU screen.
+     * Muestra formulario de Registro con HILO y RECONEXIÓN automática.
      */
-
     private void showRegisterForm() {
-        JDialog dialog = new JDialog(this, "Register Admin", true);
+        JDialog dialog = new JDialog(this, "Register", true);
         dialog.setLayout(new GridBagLayout());
         dialog.getContentPane().setBackground(CARD_COLOR);
 
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(CARD_COLOR);
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3,8,3,8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -343,10 +322,14 @@ public class AdminGUI extends JFrame {
         gbc.gridx=1; content.add(passwordField, gbc);
 
         JButton registerBtn = new JButton("Register");
-        registerBtn.setBackground(new Color(70, 130, 180));
+        registerBtn.setBackground(BLUE_BUTTON);
         registerBtn.setForeground(Color.WHITE);
+        registerBtn.setFont(BUTTON_FONT);
+        registerBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        registerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy=3; gbc.gridx=0; gbc.gridwidth=2;
+        gbc.gridy=3; gbc.gridx=0;
+        gbc.gridwidth=2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(registerBtn, gbc);
 
@@ -355,14 +338,20 @@ public class AdminGUI extends JFrame {
             String dni = dniField.getText();
             String password = new String(passwordField.getPassword());
 
+            // 1. Bloquear botón
             registerBtn.setEnabled(false);
             registerBtn.setText("Registering...");
 
+            // 2. Hilo secundario
             new Thread(() -> {
                 try {
                     boolean ok = context.getAdminUI().registerFromGUI(
-                            email, dni, password,
-                            context.getSocket(), context.getSendData(), context.getReceiveData()
+                            email,
+                            dni,
+                            password,
+                            context.getSocket(),
+                            context.getSendData(),
+                            context.getReceiveData()
                     );
 
                     SwingUtilities.invokeLater(() -> {
@@ -370,31 +359,40 @@ public class AdminGUI extends JFrame {
                         registerBtn.setText("Register");
 
                         if (ok) {
-                            JOptionPane.showMessageDialog(dialog, "Registered successfully");
+                            JOptionPane.showMessageDialog(dialog, "Registered successfully. Logging in...");
                             dialog.dispose();
 
-                            // === RECONEXIÓN ===
+                            // === LÓGICA DE RECONEXIÓN ===
                             try {
+                                // A. Cerrar socket viejo
                                 context.getSocket().close();
 
-                                String ip = (ipField != null) ? ipField.getText().trim() : "localhost";
+                                // B. Recuperar IP usada
+                                String ip = ipField.getText().trim();
                                 if(ip.isEmpty()) ip = "localhost";
 
-                                // Reiniciamos contexto Admin
-                                context = new AdminClientContext(ip, 9000); // O tu puerto de Admin
+                                // C. Crear conexión nueva (usando el puerto definido, ej 8888)
+                                context = new AdminClientContext(ip, 8888);
 
+                                // D. Mostrar login
                                 showLoginForm();
 
                             } catch (IOException e) {
-                                JOptionPane.showMessageDialog(mainPanel, "Registered but failed to reconnect: " + e.getMessage());
+                                JOptionPane.showMessageDialog(mainPanel,
+                                        "Registered, but failed to reconnect.\n" + e.getMessage(),
+                                        "Connection Error", JOptionPane.ERROR_MESSAGE);
                                 cardLayout.show(mainPanel, "AUTH");
                             }
-                            // ==================
+                            // ============================
 
                         } else {
-                            JOptionPane.showMessageDialog(dialog, "Registration failed", "Error", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(dialog,
+                                    "Registration failed",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
                     });
+
                 } catch (IOException ex) {
                     SwingUtilities.invokeLater(() -> {
                         registerBtn.setEnabled(true);
@@ -402,7 +400,7 @@ public class AdminGUI extends JFrame {
                         JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
                     });
                 }
-            }).start();
+            }).start(); // IMPORTANTE: Iniciar hilo
         });
 
         dialog.getContentPane().add(content);
@@ -411,12 +409,7 @@ public class AdminGUI extends JFrame {
         dialog.setVisible(true);
     }
 
-
-    // ===== MENU screen =====
-
-    /**
-     * Creates the admin menu screen with actions (currently: close server).
-     */
+    // ===================== MENU SCREEN =====================
 
     private JPanel createMenuPanel() {
         JPanel bg = new JPanel(new GridBagLayout());
@@ -433,7 +426,6 @@ public class AdminGUI extends JFrame {
         JButton closeServerButton = new JButton("Close server");
         styleMenuButton(closeServerButton);
 
-        // **Pendiente** implementar acción
         closeServerButton.addActionListener(e -> onStopServerButton());
 
         panel.add(Box.createVerticalStrut(15));
@@ -446,10 +438,6 @@ public class AdminGUI extends JFrame {
         return bg;
     }
 
-    /**
-     * Sends a "stop server" command in a background thread and
-     * delegates the protocol details to AdminUI.stopServerOptionGUI().
-     */
     private void onStopServerButton() {
         if (context == null) {
             JOptionPane.showMessageDialog(this,
@@ -459,19 +447,18 @@ public class AdminGUI extends JFrame {
             return;
         }
 
+        // Hilo para la operación de red del menú
         new Thread(() -> {
             try {
                 SendDataViaNetwork sendData = context.getSendData();
                 ReceiveDataViaNetwork receiveData = context.getReceiveData();
 
-                // 1. Send option 1 to server's admin menu (STOP SERVER)
-                sendData.sendInt(1);  // STOP SERVER
+                sendData.sendInt(1);  // STOP SERVER option
 
-                // 2. Run shutdown handshake using AdminUI helper
                 context.getAdminUI().stopServerOptionGUI(
                         sendData,
                         receiveData,
-                        AdminGUI.this   // parent for the JOptionPane
+                        AdminGUI.this
                 );
 
             } catch (Exception e) {
@@ -484,6 +471,4 @@ public class AdminGUI extends JFrame {
             }
         }).start();
     }
-
-
 }
