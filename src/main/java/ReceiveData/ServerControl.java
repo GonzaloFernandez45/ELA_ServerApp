@@ -25,8 +25,9 @@ public class ServerControl {
     private MedicalInformationManager medicalInformationManager;
     private DoctorManager doctorManager;
     private AdministratorManager administratorManager;
+    private SignalManager signalManager;
 
-    public ServerControl(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, PatientManager patientManager, JDBCUserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, DoctorManager doctorManager, AdministratorManager administratorManager) {
+    public ServerControl(Socket socket, ReceiveDataViaNetwork receiveDataViaNetwork, SendDataViaNetwork sendDataViaNetwork, PatientManager patientManager, JDBCUserManager userManager, SymptomManager symptomManager, MedicalInformationManager medicalInformationManager, DoctorManager doctorManager, AdministratorManager administratorManager, SignalManager signalManager) {
         this.socket = socket;
         this.receiveDataViaNetwork = receiveDataViaNetwork;
         this.sendDataViaNetwork = sendDataViaNetwork;
@@ -36,6 +37,7 @@ public class ServerControl {
         this.medicalInformationManager = medicalInformationManager;
         this.doctorManager = doctorManager;
         this.administratorManager = administratorManager;
+        this.signalManager = signalManager;
     }
 
     /**
@@ -152,7 +154,7 @@ public class ServerControl {
 
                     case 2:
                         System.out.println("Option 2: Receiving Signal...");
-                        patientReceiveAndSaveSignal(patient,receiveDataViaNetwork,sendDataViaNetwork);
+                        patientReceiveAndSaveSignal(patient);
                         break;
 
                     case 3:
@@ -528,7 +530,6 @@ public class ServerControl {
         String newName = receiveDataViaNetwork.receiveString();
         String newSurname = receiveDataViaNetwork.receiveString();
         int newPhone = receiveDataViaNetwork.receiveInt();
-        String newEmail = receiveDataViaNetwork.receiveString();
         String newdni = receiveDataViaNetwork.receiveString();
         String newSex = receiveDataViaNetwork.receiveString();
         int newInsurance = receiveDataViaNetwork.receiveInt();
@@ -551,10 +552,6 @@ public class ServerControl {
             updated = true;
         }
 
-        if (newEmail != null && !newEmail.isEmpty()) {
-            pm.updatePatientEmail(patientId, newEmail);
-            updated = true;
-        }
         if (newdni != null && !newdni.isEmpty()) {
             pm.updatePatientDNI(patientId, newdni);
             updated = true;
@@ -914,20 +911,14 @@ private void patientSeeDoctorFeedback(Patient patient) {
 
 
 
-    private static void patientReceiveAndSaveSignal(Patient patient, ReceiveDataViaNetwork receiveData, SendDataViaNetwork sendData) {
-        ConnectionManager conMan = null;
+    private void patientReceiveAndSaveSignal(Patient patient) {
+
         try {
-            Signal signal = receiveData.receiveSignal();
+            Signal signal = receiveDataViaNetwork.receiveSignal();
 
             if (signal != null) {
                 signal.setClientId(patient.getId());
 
-                // --- YA NO GUARDAMOS ARCHIVO FÍSICO NI GENERAMOS GRÁFICA EN SERVIDOR ---
-                // String generatedFileName = saveSignalToFile(signal, patient); // BORRAR
-                // generateSignalGraph(signal, generatedFileName); // BORRAR OPCIONAL
-
-                conMan = new ConnectionManager();
-                JDBCSignalManager signalManager = new JDBCSignalManager(conMan);
 
                 java.sql.Date date = new java.sql.Date(System.currentTimeMillis());
 
@@ -935,28 +926,23 @@ private void patientSeeDoctorFeedback(Patient patient) {
                 signalManager.addSignal(signal, "STORED_IN_DB", date);
 
                 System.out.println("Signal saved in DB successfully.");
-                sendData.sendStrings("OK");
+                sendDataViaNetwork.sendStrings("OK");
 
             } else {
-                sendData.sendStrings("ERROR");
+                sendDataViaNetwork.sendStrings("ERROR");
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (conMan != null) conMan.close();
         }
     }
 
     private void doctorViewSignals() throws IOException {
-        ConnectionManager cm = null;
+
         try {
             // 1. Recibir ID del paciente
             int patientIdForSignal = receiveDataViaNetwork.receiveInt();
 
-            // 2. Preparar conexión y Manager
-            cm = new ConnectionManager();
-            JDBCSignalManager signalManager = new JDBCSignalManager(cm);
 
             // 3. Obtener lista de señales
             List<Signal> signals = signalManager.listSignalsByPatientId(patientIdForSignal);
@@ -995,12 +981,8 @@ private void patientSeeDoctorFeedback(Patient patient) {
         } catch (Exception e) {
             System.err.println("Error handling signal view: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            // Aseguramos cerrar la conexión temporal
-            if (cm != null) {
-                cm.close();
-            }
         }
+
     }
 
 }

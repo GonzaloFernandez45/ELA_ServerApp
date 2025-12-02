@@ -114,31 +114,8 @@ public class JDBCPatientManager implements PatientManager {
 
 
 
+
     @Override
-    public void updatePatient(Patient p) {//la opcion del doctor de "modify patient data"
-        try{
-            String sql= " UPDATE patient SET name =?, surname=?, dob=?,sex=?,phone=?,email=?,insurance=? WHERE id=?";
-            PreparedStatement pstmt;
-            pstmt= c.prepareStatement(sql);
-            pstmt.setString(1,p.getName());
-            pstmt.setString(2,p.getSurname());
-            pstmt.setDate(3, p.getDateOfBirth());
-            pstmt.setString(4,p.getSex());
-            pstmt.setInt(5,p.getPhone());
-            pstmt.setString(6,p.getEmail());
-            pstmt.setInt(7,p.getInsurance());
-            pstmt.executeUpdate();
-            pstmt.close();
-
-        }catch (SQLException e){
-            System.out.println("Error updating patient");
-            e.printStackTrace();
-        }
-
-
-
-    }
-
     public boolean updatePatientName(int patientId, String newName) {
         if (newName.isEmpty()){
             return false;
@@ -162,6 +139,8 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
+
+    @Override
     public boolean updatePatientSurname(int patientId, String newSurname) {
         if (newSurname.isEmpty()){
             return false;
@@ -185,6 +164,8 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
+
+    @Override
     public boolean updatePatientDNI(int patientId, String newDni) {
         if (newDni.isEmpty()){
             return false;
@@ -209,6 +190,7 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
+    @Override
     public boolean updatePatientDob(int patientId, Date newDob) {
         if (newDob.equals(null)){
             return false;
@@ -232,6 +214,8 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
+
+    @Override
     public boolean updatePatientPhone(int id, int newPatientPhone) {
         if (newPatientPhone == 0){
             return false;
@@ -256,30 +240,8 @@ public class JDBCPatientManager implements PatientManager {
 
     }
 
-    public boolean updatePatientEmail(int patientId, String newEmail) {
-        if (newEmail.isEmpty()){
-            return false;
-        }
 
-        try{
-            String query = "UPDATE patient SET email = ? WHERE id = ?";
-            PreparedStatement pstmt;
-            pstmt = c.prepareStatement(query);
-            pstmt.setString(1,newEmail);
-            pstmt.setInt(2,patientId);
-            pstmt.executeUpdate();
-            pstmt.close();
-            return true;
-        }
-        catch (SQLException e){
-            System.out.println("Error updating patient");
-            e.printStackTrace();
-            return false;
-        }
-
-
-    }
-
+    @Override
     public boolean updatePatientSex(int patientId, String newSex) {
         if (newSex.isEmpty()){
             return false;
@@ -303,6 +265,8 @@ public class JDBCPatientManager implements PatientManager {
 
 
     }
+
+    @Override
     public boolean updatePatientInsurance(int patientId, int newInsurance){
         if (newInsurance == 0){
             return false;

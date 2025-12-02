@@ -40,6 +40,7 @@ public class ClientHandler implements Runnable {
         JDBCMedicalInformationManager medicalInformationManager = new JDBCMedicalInformationManager(connectionManager);
         JDBCDoctorManager doctorManager = new JDBCDoctorManager(connectionManager);
         JDBCAdministratorManager administratorManager = new JDBCAdministratorManager(connectionManager);
+        JDBCSignalManager signalManager = new JDBCSignalManager(connectionManager);
 
         ReceiveDataViaNetwork receiveData = null;
         SendDataViaNetwork sendData = null;
@@ -54,7 +55,7 @@ public class ClientHandler implements Runnable {
             // Controller that implements the application protocol / menus
             ServerControl controller = new ServerControl(
                     socket, receiveData, sendData, patientManager, userManager,
-                    symptomManager, medicalInformationManager, doctorManager, administratorManager
+                    symptomManager, medicalInformationManager, doctorManager, administratorManager, signalManager
             );
 
             // Start handling the conversation with this client

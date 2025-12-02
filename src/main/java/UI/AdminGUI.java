@@ -246,56 +246,83 @@ public class AdminGUI extends JFrame {
         content.setBackground(CARD_COLOR);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4,8,4,8);
+        gbc.insets = new Insets(4, 8, 4, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JTextField emailField = new JTextField(18);
         JPasswordField passwordField = new JPasswordField(18);
 
-        gbc.gridx=0; gbc.gridy=0;
+        gbc.gridx = 0; gbc.gridy = 0;
         content.add(new JLabel("Email:"), gbc);
-        gbc.gridx=1;
+        gbc.gridx = 1;
         content.add(emailField, gbc);
 
-        gbc.gridx=0; gbc.gridy=1;
+        gbc.gridx = 0; gbc.gridy = 1;
         content.add(new JLabel("Password:"), gbc);
-        gbc.gridx=1;
+        gbc.gridx = 1;
         content.add(passwordField, gbc);
 
         JButton loginBtn = new JButton("Log in");
         loginBtn.setBackground(BLUE_BUTTON);
         loginBtn.setForeground(Color.WHITE);
         loginBtn.setFont(BUTTON_FONT);
-        loginBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        loginBtn.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
         loginBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy=2; gbc.gridx=0;
-        gbc.gridwidth=2;
+        gbc.gridy = 2; gbc.gridx = 0;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(loginBtn, gbc);
 
+        // --- LÓGICA AJUSTADA (hilo + bloqueo botón) ---
         loginBtn.addActionListener(ev -> {
-            try {
-                boolean ok = context.getAdminUI().logInFromGUI(
-                        emailField.getText(),
-                        new String(passwordField.getPassword()),
-                        context.getSocket(),
-                        context.getSendData(),
-                        context.getReceiveData()
-                );
-                if (ok) {
-                    JOptionPane.showMessageDialog(dialog, "Login successful");
-                    dialog.dispose();
-                    cardLayout.show(mainPanel, "MENU");
-                } else {
-                    JOptionPane.showMessageDialog(dialog,
-                            "Incorrect user or password",
-                            "Login error",
-                            JOptionPane.ERROR_MESSAGE);
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
+
+            loginBtn.setEnabled(false);
+            loginBtn.setText("Connecting...");
+
+            new Thread(() -> {
+                try {
+                    boolean ok = context.getAdminUI().logInFromGUI(
+                            email,
+                            password,
+                            context.getSocket(),
+                            context.getSendData(),
+                            context.getReceiveData()
+                    );
+
+                    SwingUtilities.invokeLater(() -> {
+                        loginBtn.setEnabled(true);
+                        loginBtn.setText("Log in");
+
+                        if (ok) {
+                            JOptionPane.showMessageDialog(dialog, "Login successful");
+                            dialog.dispose();
+                            cardLayout.show(mainPanel, "MENU");
+                        } else {
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Incorrect user or password",
+                                    "Login error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    });
+
+                } catch (IOException ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        loginBtn.setEnabled(true);
+                        loginBtn.setText("Log in");
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Error: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    });
                 }
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
-            }
+            }).start();
         });
 
         dialog.getContentPane().add(content);
@@ -303,6 +330,7 @@ public class AdminGUI extends JFrame {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
+
 
     /**
      * Modal dialog for admin registration.
@@ -317,63 +345,91 @@ public class AdminGUI extends JFrame {
         content.setBackground(CARD_COLOR);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3,8,3,8);
+        gbc.insets = new Insets(3, 8, 3, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JTextField emailField = new JTextField(18);
         JTextField dniField = new JTextField(12);
         JPasswordField passwordField = new JPasswordField(18);
 
-        gbc.gridx=0; gbc.gridy=0;
+        gbc.gridx = 0; gbc.gridy = 0;
         content.add(new JLabel("Email:"), gbc);
-        gbc.gridx=1;
+        gbc.gridx = 1;
         content.add(emailField, gbc);
 
-        gbc.gridx=0; gbc.gridy=1;
+        gbc.gridx = 0; gbc.gridy = 1;
         content.add(new JLabel("DNI:"), gbc);
-        gbc.gridx=1;
+        gbc.gridx = 1;
         content.add(dniField, gbc);
 
-        gbc.gridx=0; gbc.gridy=2;
+        gbc.gridx = 0; gbc.gridy = 2;
         content.add(new JLabel("Password:"), gbc);
-        gbc.gridx=1;
+        gbc.gridx = 1;
         content.add(passwordField, gbc);
 
         JButton registerBtn = new JButton("Register");
         registerBtn.setBackground(BLUE_BUTTON);
         registerBtn.setForeground(Color.WHITE);
         registerBtn.setFont(BUTTON_FONT);
-        registerBtn.setBorder(BorderFactory.createEmptyBorder(8,18,8,18));
+        registerBtn.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
         registerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy=3; gbc.gridx=0;
-        gbc.gridwidth=2;
+        gbc.gridy = 3; gbc.gridx = 0;
+        gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(registerBtn, gbc);
 
+        // --- LÓGICA AJUSTADA (hilo + bloqueo botón) ---
         registerBtn.addActionListener(ev -> {
-            try {
-                boolean ok = context.getAdminUI().registerFromGUI(
-                        emailField.getText(),
-                        dniField.getText(),
-                        new String(passwordField.getPassword()),
-                        context.getSocket(),
-                        context.getSendData(),
-                        context.getReceiveData()
-                );
-                if (ok) {
-                    JOptionPane.showMessageDialog(dialog, "Registered successfully");
-                    dialog.dispose();
-                    cardLayout.show(mainPanel, "MENU");
-                } else {
-                    JOptionPane.showMessageDialog(dialog,
-                            "Registration failed",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+            String email = emailField.getText();
+            String dni = dniField.getText();
+            String password = new String(passwordField.getPassword());
+
+            registerBtn.setEnabled(false);
+            registerBtn.setText("Registering...");
+
+            new Thread(() -> {
+                try {
+                    boolean ok = context.getAdminUI().registerFromGUI(
+                            email,
+                            dni,
+                            password,
+                            context.getSocket(),
+                            context.getSendData(),
+                            context.getReceiveData()
+                    );
+
+                    SwingUtilities.invokeLater(() -> {
+                        registerBtn.setEnabled(true);
+                        registerBtn.setText("Register");
+
+                        if (ok) {
+                            JOptionPane.showMessageDialog(dialog, "Registered successfully");
+                            dialog.dispose();
+                            cardLayout.show(mainPanel, "MENU");
+                        } else {
+                            JOptionPane.showMessageDialog(
+                                    dialog,
+                                    "Registration failed",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    });
+
+                } catch (IOException ex) {
+                    SwingUtilities.invokeLater(() -> {
+                        registerBtn.setEnabled(true);
+                        registerBtn.setText("Register");
+                        JOptionPane.showMessageDialog(
+                                dialog,
+                                "Error: " + ex.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                        );
+                    });
                 }
-            } catch (IOException ex) {
-                JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
-            }
+            }).start();
         });
 
         dialog.getContentPane().add(content);
@@ -381,6 +437,7 @@ public class AdminGUI extends JFrame {
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
+
 
     // ===== MENU screen =====
 

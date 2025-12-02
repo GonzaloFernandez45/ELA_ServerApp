@@ -3,6 +3,7 @@ package interfaces;
 import pojos.Patient;
 import pojos.User;
 
+import java.sql.Date;
 import java.util.List;
 
 /**
@@ -34,18 +35,25 @@ public interface PatientManager {
     Patient getPatientbyId(int id);
 
     /**
-     * Updates an existing patient.
-     *
-     * @param p patient with updated data.
-     */
-    void updatePatient(Patient p);
-
-    /**
      * Retrieves the patient ID from email.
      *
      * @param email patient email.
      * @return patient ID, or -1/impl-specific if not found.
      */
     int getPatientIDFromEmail(String email);
+
+    public boolean updatePatientInsurance(int patientId, int newInsurance);
+
+    public boolean updatePatientSex(int patientId, String newSex);
+
+    public boolean updatePatientPhone(int id, int newPatientPhone);
+
+    public boolean updatePatientDob(int patientId, Date newDob);
+
+    public boolean updatePatientDNI(int patientId, String newDni);
+
+    public boolean updatePatientSurname(int patientId, String newSurname);
+
+    public boolean updatePatientName(int patientId, String newName);
 
 }
