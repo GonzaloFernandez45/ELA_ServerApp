@@ -41,7 +41,7 @@ public class JDBCUserManager implements UserManager {
             pstmt.setString(2, hash );
             pstmt.setString(3, saltStr );
 
-            pstmt.setString(4, roleStr); // o roleName, como quieras guardar
+            pstmt.setString(4, roleName); // o roleName, como quieras guardar
 
             // Normalizamos para comparar
             String roleNorm = roleName.toUpperCase();
@@ -60,12 +60,13 @@ public class JDBCUserManager implements UserManager {
             } else if (roleNorm.contains("ADMINISTRATOR")) {
                 System.out.println("Detected DOCTOR role in addUser");
                 pstmt.setNull(5, Types.INTEGER);         // patient_id NULL
-                pstmt.setNull(6, user.getDoctor_id());// doctor_id NULL
+                pstmt.setNull(6, Types.INTEGER);// doctor_id NULL
                 pstmt.setInt(7,user.getAdmin_id());
             } else {
                 System.out.println("Unknown role, setting all FKs to NULL");
                 pstmt.setNull(5, Types.INTEGER);
                 pstmt.setNull(6, Types.INTEGER);
+                pstmt.setNull(7, Types.INTEGER);
             }
 
             pstmt.executeUpdate();

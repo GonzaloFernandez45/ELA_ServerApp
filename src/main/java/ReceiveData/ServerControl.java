@@ -850,6 +850,14 @@ private void patientSeeDoctorFeedback(Patient patient) {
             boolean menuLoop = true;
             while (menuLoop) {
                 int opcion = receiveDataViaNetwork.receiveInt();
+
+                // <<< IMPORTANTE: detectar desconexión >>>
+                if (opcion == -1) {
+                    System.out.println("menuAdmin: client disconnected (receiveInt = -1)");
+                    menuLoop = false;
+                    break;
+                }
+
                 switch (opcion) {
                     case 1: // STOP SERVER
                         System.out.println("Admin requested shutdown.");
