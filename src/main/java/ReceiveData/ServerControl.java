@@ -534,35 +534,34 @@ public class ServerControl {
         String newSex = receiveDataViaNetwork.receiveString();
         int newInsurance = receiveDataViaNetwork.receiveInt();
 
-        JDBCPatientManager pm = new JDBCPatientManager(new ConnectionManager());
         boolean updated = false;
 
         if (newName != null && !newName.isEmpty()) {
-            pm.updatePatientName(patientId, newName);
+            patientManager.updatePatientName(patientId, newName);
             updated = true;
         }
 
         if (newSurname != null && !newSurname.isEmpty()) {
-            pm.updatePatientSurname(patientId, newSurname);
+            patientManager.updatePatientSurname(patientId, newSurname);
             updated = true;
         }
 
         if (newPhone != -1) {
-            pm.updatePatientPhone(patientId, newPhone);
+            patientManager.updatePatientPhone(patientId, newPhone);
             updated = true;
         }
 
         if (newdni != null && !newdni.isEmpty()) {
-            pm.updatePatientDNI(patientId, newdni);
+            patientManager.updatePatientDNI(patientId, newdni);
             updated = true;
         }
         if (newSex != null && !newSex.isEmpty()) {
-            pm.updatePatientSex(patientId, newSex);
+            patientManager.updatePatientSex(patientId, newSex);
             updated = true;
         }
 
         if (newInsurance != -1) {
-            pm.updatePatientInsurance(patientId, newInsurance);
+            patientManager.updatePatientInsurance(patientId, newInsurance);
             updated = true;
         }
 
