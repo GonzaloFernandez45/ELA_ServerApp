@@ -14,6 +14,8 @@ public class ConnectionManager {
     private SymptomManager SympMan;
     private MedicalInformationManager MedMan;
     private UserManager uMan;
+    private AdministratorManager adminMan;
+    private SignalManager signMan;
 
     public Connection getConnection() {
         return conn;
@@ -23,20 +25,21 @@ public class ConnectionManager {
         this.connect();
         this.docMan = new JDBCDoctorManager(this);
         this.pMan = new JDBCPatientManager(this);
-        //this.SympMan = new JDBCSymptomManager(this);
-        //this.MedMan = new JDBCMedicalInformationManager(this);
-        //this.uMan = new JDBCUserManager(this);
-
+        this.SympMan = new JDBCSymptomManager(this);
+        this.MedMan = new JDBCMedicalInformationManager(this);
+        this.uMan = new JDBCUserManager(this);
+        this.adminMan = new JDBCAdministratorManager(this);
+        this.signMan = new JDBCSignalManager(this);
 
         this.createTables();
-        //this.insertSymptoms();
+        this.insertSymptoms();
 
     }
 
     private void connect() {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:./db/ELA_telemedicine.db");
+            conn = DriverManager.getConnection("jdbc:sqlite:ELA_telemedicine.db");
             conn.createStatement().execute("PRAGMA foreign_keys=ON");
         } catch (ClassNotFoundException cnfE) {
             System.out.println("Databases ELA not loaded");
@@ -104,10 +107,10 @@ public class ConnectionManager {
             Statement createTables5 = conn.createStatement();
             String create5 = "CREATE TABLE symptom_medicalInformation ("
                     + "symptom_id INTEGER,"
-                    + "MEDICAL_information_id INTEGER,"
-                    + "FOREIGN KEY (symptom_id) REFERENCES symptom(id)),"
-                    + "FOREIGN KEY (medical_information_id) REFERENCES medicalInformation(id)),"
-                    + "PRIMARY KEY (symptom_id,medical_information_id))";
+                    + "medical_information_id INTEGER,"
+                    + "PRIMARY KEY (symptom_id,medical_information_id),"
+                    + "FOREIGN KEY (symptom_id) REFERENCES symptom(id),"
+                    + "FOREIGN KEY (medical_information_id) REFERENCES medical_information(id))";
             createTables5.executeUpdate(create5);
             createTables5.close();
 
@@ -115,26 +118,40 @@ public class ConnectionManager {
             String create6 = "CREATE TABLE administrator("
                     + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                     + "email TEXT NOT NULL UNIQUE,"
-                    + "dni TEXT NOT NULL,";
+                    + "dni TEXT NOT NULL)";
 
             createTables6.executeUpdate(create6);
             createTables6.close();
 
             Statement createTables7 = conn.createStatement();
             String create7 = "CREATE TABLE user ("
-                    + "user_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                    + "id INTEGER,"
                     + "email TEXT NOT NULL UNIQUE,"
-                    + "password TEXT NOT NULL,"
+                    + "passwordHash TEXT NOT NULL,"
+                    + "passwordSalt TEXT NOT NULL,"
                     + "role TEXT NOT NULL,"
                     + "patient_id INTEGER,"
                     + "doctor_id INTEGER,"
-                    + "admin_id INTEGER"
-                    + "FOREIGN KEY (patient_id) REFERENCES patient(id)),"
-                    + "FOREIGN KEY (doctor_id) REFERENCES doctor(id)),"
+                    + "admin_id INTEGER,"
+                    + "PRIMARY KEY(id AUTOINCREMENT),"
+                    + "FOREIGN KEY (patient_id) REFERENCES patient(id),"
+                    + "FOREIGN KEY (doctor_id) REFERENCES doctor(id),"
                     + "FOREIGN KEY (admin_id) REFERENCES administrator(id))";
             createTables7.executeUpdate(create7);
             createTables7.close();
-            this.insertSymptoms();
+
+            Statement createTables8 = conn.createStatement();
+            String create8 = "CREATE TABLE signal ("
+                    + "id INTEGER,"
+                    + "patient_id INTEGER,"
+                    + "type TEXT,"
+                    + "record_date TEXT,"
+                    + "signal_values TEXT,"
+                    + "PRIMARY KEY (id AUTOINCREMENT),"
+                    + "FOREIGN KEY (patient_id) REFERENCES patient(id))";
+            createTables8.executeUpdate(create8);
+            createTables8.close();
+
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("already exist")){
@@ -184,16 +201,6 @@ public class ConnectionManager {
             insertSymptom7.executeUpdate(symptom7);
             insertSymptom7.close();
 
-            Statement createTables8 = conn.createStatement();
-            String create8 = "CREATE TABLE signal ("
-                    + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                    + "patient_id INTEGER,"
-                    + "type TEXT,"
-                    + "record_date TEXT,"
-                    + "signal_values TEXT,"
-                    + "FOREIGN KEY (patient_id) REFERENCES patient(id))";
-            createTables8.executeUpdate(create8);
-            createTables8.close();
 
         }catch (SQLException sqlE) {
             if (sqlE.getMessage().contains("UNIQUE constraint failed")) {

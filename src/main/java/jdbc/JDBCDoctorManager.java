@@ -11,6 +11,7 @@ import java.util.List;
 public class JDBCDoctorManager implements DoctorManager {
     private Connection c;
     private ConnectionManager conMan;
+
     public JDBCDoctorManager(ConnectionManager conMan) {
         this.conMan = conMan;
         this.c = conMan.getConnection();

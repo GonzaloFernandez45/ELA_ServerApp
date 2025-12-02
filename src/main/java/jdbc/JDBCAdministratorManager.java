@@ -10,6 +10,7 @@ import pojos.Administrator;
 public class JDBCAdministratorManager implements AdministratorManager {
     private Connection c;
     private ConnectionManager conMan;
+
     public JDBCAdministratorManager(ConnectionManager conMan) {
         this.conMan = conMan;
         this.c = conMan.getConnection();

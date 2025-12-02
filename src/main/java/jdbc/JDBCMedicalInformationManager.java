@@ -12,11 +12,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class JDBCMedicalInformationManager implements MedicalInformationManager {
-    private static Connection c;
+    private Connection c;
     private ConnectionManager conMan;
 
     public JDBCMedicalInformationManager(ConnectionManager conMan) {
-        this.conMan = new ConnectionManager();
+        this.conMan = conMan;
         this.c= conMan.getConnection();
     }
 

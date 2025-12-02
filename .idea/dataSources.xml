@@ -2,7 +2,7 @@
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
     <data-source source="LOCAL" name="ELA_telemedicine" uuid="89d4e9ca-3331-463e-a40b-2b71d488960e">
-      <driver-ref>72fd212e-be8a-4c38-9c86-5ff97b3cb809</driver-ref>
+      <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:C:\Users\ferna\Documents\UNIVERSIDAD\4\Telemedicine\ELABitalino\ELA_ServerApp\db\ELA_telemedicine.db</jdbc-url>

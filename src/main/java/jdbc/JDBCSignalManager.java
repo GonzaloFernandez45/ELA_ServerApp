@@ -15,8 +15,11 @@ import java.io.IOException;
 public class JDBCSignalManager implements SignalManager {
 
     private Connection c;
+    private ConnectionManager conMan;
+
 
     public JDBCSignalManager(ConnectionManager conMan) {
+        this.conMan = conMan;
         this.c = conMan.getConnection();
     }
 

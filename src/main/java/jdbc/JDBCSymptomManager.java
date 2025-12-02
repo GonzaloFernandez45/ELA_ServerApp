@@ -11,8 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JDBCSymptomManager implements SymptomManager {
-    private static Connection c;
+    private Connection c;
     private ConnectionManager conMan;
+
     public JDBCSymptomManager(ConnectionManager conMan) {
         this.conMan = conMan;
         this.c = conMan.getConnection();
