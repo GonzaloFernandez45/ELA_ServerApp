@@ -237,44 +237,37 @@ public class AdminGUI extends JFrame {
      * Modal dialog for admin login.
      * Calls AdminUI.logInFromGUI() and if OK → go to MENU screen.
      */
+
+
     private void showLoginForm() {
-        JDialog dialog = new JDialog(this, "Log in", true);
+        JDialog dialog = new JDialog(this, "Log in Admin", true);
         dialog.setLayout(new GridBagLayout());
         dialog.getContentPane().setBackground(CARD_COLOR);
 
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(CARD_COLOR);
-
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 8, 4, 8);
+        gbc.insets = new Insets(4,8,4,8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JTextField emailField = new JTextField(18);
         JPasswordField passwordField = new JPasswordField(18);
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        content.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1;
-        content.add(emailField, gbc);
+        gbc.gridx=0; gbc.gridy=0; content.add(new JLabel("Email:"), gbc);
+        gbc.gridx=1; content.add(emailField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        content.add(new JLabel("Password:"), gbc);
-        gbc.gridx = 1;
-        content.add(passwordField, gbc);
+        gbc.gridx=0; gbc.gridy=1; content.add(new JLabel("Password:"), gbc);
+        gbc.gridx=1; content.add(passwordField, gbc);
 
         JButton loginBtn = new JButton("Log in");
-        loginBtn.setBackground(BLUE_BUTTON);
+        // Tus estilos de botón de Admin
+        loginBtn.setBackground(new Color(70, 130, 180));
         loginBtn.setForeground(Color.WHITE);
-        loginBtn.setFont(BUTTON_FONT);
-        loginBtn.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
-        loginBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy = 2; gbc.gridx = 0;
-        gbc.gridwidth = 2;
+        gbc.gridy=2; gbc.gridx=0; gbc.gridwidth=2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(loginBtn, gbc);
 
-        // --- LÓGICA AJUSTADA (hilo + bloqueo botón) ---
         loginBtn.addActionListener(ev -> {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
@@ -299,27 +292,16 @@ public class AdminGUI extends JFrame {
                         if (ok) {
                             JOptionPane.showMessageDialog(dialog, "Login successful");
                             dialog.dispose();
-                            cardLayout.show(mainPanel, "MENU");
+                            cardLayout.show(mainPanel, "MENU"); // Pantalla del Admin
                         } else {
-                            JOptionPane.showMessageDialog(
-                                    dialog,
-                                    "Incorrect user or password",
-                                    "Login error",
-                                    JOptionPane.ERROR_MESSAGE
-                            );
+                            JOptionPane.showMessageDialog(dialog, "Incorrect user or password", "Login error", JOptionPane.ERROR_MESSAGE);
                         }
                     });
-
                 } catch (IOException ex) {
                     SwingUtilities.invokeLater(() -> {
                         loginBtn.setEnabled(true);
                         loginBtn.setText("Log in");
-                        JOptionPane.showMessageDialog(
-                                dialog,
-                                "Error: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
+                        JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
                     });
                 }
             }).start();
@@ -331,55 +313,43 @@ public class AdminGUI extends JFrame {
         dialog.setVisible(true);
     }
 
-
     /**
      * Modal dialog for admin registration.
      * Calls AdminUI.registerFromGUI(). If OK → go to MENU screen.
      */
+
     private void showRegisterForm() {
-        JDialog dialog = new JDialog(this, "Register", true);
+        JDialog dialog = new JDialog(this, "Register Admin", true);
         dialog.setLayout(new GridBagLayout());
         dialog.getContentPane().setBackground(CARD_COLOR);
 
         JPanel content = new JPanel(new GridBagLayout());
         content.setBackground(CARD_COLOR);
-
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3, 8, 3, 8);
+        gbc.insets = new Insets(3,8,3,8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JTextField emailField = new JTextField(18);
         JTextField dniField = new JTextField(12);
         JPasswordField passwordField = new JPasswordField(18);
 
-        gbc.gridx = 0; gbc.gridy = 0;
-        content.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1;
-        content.add(emailField, gbc);
+        gbc.gridx=0; gbc.gridy=0; content.add(new JLabel("Email:"), gbc);
+        gbc.gridx=1; content.add(emailField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 1;
-        content.add(new JLabel("DNI:"), gbc);
-        gbc.gridx = 1;
-        content.add(dniField, gbc);
+        gbc.gridx=0; gbc.gridy=1; content.add(new JLabel("DNI:"), gbc);
+        gbc.gridx=1; content.add(dniField, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2;
-        content.add(new JLabel("Password:"), gbc);
-        gbc.gridx = 1;
-        content.add(passwordField, gbc);
+        gbc.gridx=0; gbc.gridy=2; content.add(new JLabel("Password:"), gbc);
+        gbc.gridx=1; content.add(passwordField, gbc);
 
         JButton registerBtn = new JButton("Register");
-        registerBtn.setBackground(BLUE_BUTTON);
+        registerBtn.setBackground(new Color(70, 130, 180));
         registerBtn.setForeground(Color.WHITE);
-        registerBtn.setFont(BUTTON_FONT);
-        registerBtn.setBorder(BorderFactory.createEmptyBorder(8, 18, 8, 18));
-        registerBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        gbc.gridy = 3; gbc.gridx = 0;
-        gbc.gridwidth = 2;
+        gbc.gridy=3; gbc.gridx=0; gbc.gridwidth=2;
         gbc.anchor = GridBagConstraints.CENTER;
         content.add(registerBtn, gbc);
 
-        // --- LÓGICA AJUSTADA (hilo + bloqueo botón) ---
         registerBtn.addActionListener(ev -> {
             String email = emailField.getText();
             String dni = dniField.getText();
@@ -391,12 +361,8 @@ public class AdminGUI extends JFrame {
             new Thread(() -> {
                 try {
                     boolean ok = context.getAdminUI().registerFromGUI(
-                            email,
-                            dni,
-                            password,
-                            context.getSocket(),
-                            context.getSendData(),
-                            context.getReceiveData()
+                            email, dni, password,
+                            context.getSocket(), context.getSendData(), context.getReceiveData()
                     );
 
                     SwingUtilities.invokeLater(() -> {
@@ -406,27 +372,34 @@ public class AdminGUI extends JFrame {
                         if (ok) {
                             JOptionPane.showMessageDialog(dialog, "Registered successfully");
                             dialog.dispose();
-                            cardLayout.show(mainPanel, "MENU");
+
+                            // === RECONEXIÓN ===
+                            try {
+                                context.getSocket().close();
+
+                                String ip = (ipField != null) ? ipField.getText().trim() : "localhost";
+                                if(ip.isEmpty()) ip = "localhost";
+
+                                // Reiniciamos contexto Admin
+                                context = new AdminClientContext(ip, 9000); // O tu puerto de Admin
+
+                                showLoginForm();
+
+                            } catch (IOException e) {
+                                JOptionPane.showMessageDialog(mainPanel, "Registered but failed to reconnect: " + e.getMessage());
+                                cardLayout.show(mainPanel, "AUTH");
+                            }
+                            // ==================
+
                         } else {
-                            JOptionPane.showMessageDialog(
-                                    dialog,
-                                    "Registration failed",
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE
-                            );
+                            JOptionPane.showMessageDialog(dialog, "Registration failed", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                     });
-
                 } catch (IOException ex) {
                     SwingUtilities.invokeLater(() -> {
                         registerBtn.setEnabled(true);
                         registerBtn.setText("Register");
-                        JOptionPane.showMessageDialog(
-                                dialog,
-                                "Error: " + ex.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
+                        JOptionPane.showMessageDialog(dialog, "Error: " + ex.getMessage());
                     });
                 }
             }).start();
